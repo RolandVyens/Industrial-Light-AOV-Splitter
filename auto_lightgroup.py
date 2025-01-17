@@ -72,6 +72,7 @@ def auto_assignlight():
     light_objects = [
         obj for obj in bpy.context.view_layer.objects if obj.type == "LIGHT"
     ]
+    temp_light = []
     for lightgroup in lightgroups:
         for lobe in ["diffuse_", "specular_", "transmission_", "volume_"]:
             if lightgroup.startswith(f"{lobe}"):
@@ -84,6 +85,9 @@ def auto_assignlight():
                         bpy.context.scene.collection.objects.link(duplicate)
                         duplicate.name = f"{lobe}{light}"
                         duplicate.lightgroup = lightgroup
-                light_object.hide_render = True
+                        temp_light.append(light)
+    for light in temp_light:
+        obj = bpy.data.objects.get(light)
+        obj.hide_render = True
 
     return {"finished"}
