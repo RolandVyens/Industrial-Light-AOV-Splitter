@@ -12,6 +12,7 @@ def auto_lightgroup():
             "lgt_" in collection.name
             and lc.exclude is False
             and lc.hide_viewport is False
+            and lc.hide_render is False
         ):
             for obj in collection.all_objects:
                 if obj.type == "LIGHT":
@@ -19,6 +20,7 @@ def auto_lightgroup():
                     bpy.ops.scene.view_layer_add_lightgroup(name=f"{obj.name}")
                     obj.lightgroup = obj.name
     print(light_list)
+    bpy.ops.scene.view_layer_remove_unused_lightgroups()
 
     return light_list
 
@@ -60,5 +62,28 @@ def auto_lightaov():
         if lightdict[light][3] is True:
             bpy.ops.scene.view_layer_add_lightgroup(name=f"volume_{light}")
     # print(lightdict)
+
+    return {"finished"}
+
+
+def auto_assignlight():
+    view_layer = bpy.context.view_layer
+    lightgroups = [lg.name for lg in view_layer.lightgroups]
+    light_objects = [
+        obj for obj in bpy.context.view_layer.objects if obj.type == "LIGHT"
+    ]
+    for lightgroup in lightgroups:
+        for lobe in ["diffuse_", "specular_", "transmission_", "volume_"]:
+            if lightgroup.startswith(f"{lobe}"):
+                light = lightgroup.removeprefix(f"{lobe}")
+                for light_object in light_objects:
+                    if light_object.name == light or light_object.name[:-4] == light:
+                        obj = bpy.data.objects.get(light_object.name)
+                        duplicate = obj.copy()
+                        duplicate.data = obj.data.copy()
+                        bpy.context.scene.collection.objects.link(duplicate)
+                        duplicate.name = f"{lobe}{light}"
+                        duplicate.lightgroup = lightgroup
+                light_object.hide_render = True
 
     return {"finished"}
