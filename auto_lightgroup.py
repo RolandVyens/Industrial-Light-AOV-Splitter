@@ -120,7 +120,7 @@ def auto_assignlight_scene():
                 if lightgroup.startswith(f"{lobe}"):
                     light = lightgroup.removeprefix(f"{lobe}")
                     for light_object_name in light_dict[key]:
-                        light_object=bpy.context.scene.objects.get(light_object_name)
+                        light_object = bpy.context.scene.objects.get(light_object_name)
                         if (
                             light_object.name == light
                             or light_object.name[:-4] == light
@@ -141,3 +141,5 @@ def auto_assignlight_scene():
     print(lightgroup_dict)
     print(lightcollection_dict)
     print(light_dict)
+
+    return {"finished"}
