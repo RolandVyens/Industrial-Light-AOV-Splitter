@@ -9,3 +9,26 @@ bl_info = {
     "doc_url": "https://github.com/RolandVyens/Industrial-AOV-Connector",
     "tracker_url": "https://github.com/RolandVyens/Industrial-AOV-Connector/issues",
 }
+
+import bpy
+from .auto_lightgroup import auto_lightgroup, auto_lightaov
+from .auto_aov_renderscript import auto_assignlight_scene, auto_restorelight_scene
+
+
+class LAS_OT_InitAOV(bpy.types.Operator):
+    bl_idname = "object.initlightaov"
+    bl_label = "Make Light AOVs For Current Layer"
+    bl_description = 'This will look for all enabled collections which name starts with "lgt_" and create splitted light aovs for all lights in it'
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        auto_lightgroup()
+        auto_lightaov()
+        
+
+class LAS_PT_oPanel_Base:
+
+    def draw(self, context):
+        layout=self.layout
+        col = layout.column()
+        col.scale_y = 3

@@ -22,7 +22,7 @@ def auto_lightgroup():
     print(light_list)
     bpy.ops.scene.view_layer_remove_unused_lightgroups()
 
-    return light_list
+    return {"finished"}
 
 
 def auto_lightaov():
