@@ -4,6 +4,8 @@ from bpy.app.handlers import persistent
 
 @persistent
 def auto_assignlight_scene(dummy):
+    global LAS_newLight
+    global LAS_originLight
     lightgroup_dict = {}
     lightcollection_dict = {}
     light_dict = {}
@@ -23,7 +25,8 @@ def auto_assignlight_scene(dummy):
                     if object.type == "LIGHT":
                         lights.append(object.name)
                 light_dict[viewlayer.name] = lights
-    temp_light = []
+    LAS_originLight = []
+    LAS_newLight = []
     for key in lightgroup_dict.keys():
         for lightgroup in lightgroup_dict[key]:
             for lobe in ["diffuse_", "specular_", "transmission_", "volume_"]:
@@ -47,6 +50,7 @@ def auto_assignlight_scene(dummy):
                             duplicate.visible_glossy = False
                             duplicate.visible_transmission = False
                             duplicate.visible_volume_scatter = False
+                            LAS_newLight.append(duplicate.name)
                             if lobe == "diffuse_":
                                 duplicate.visible_diffuse = True
                             if lobe == "specular_":
@@ -55,11 +59,21 @@ def auto_assignlight_scene(dummy):
                                 duplicate.visible_transmission = True
                             if lobe == "volume_":
                                 duplicate.visible_volume_scatter = True
-                            temp_light.append(light)
-    for light in temp_light:
+                            LAS_originLight.append(light)
+    for light in LAS_originLight:
         obj = bpy.data.objects.get(light)
         obj.hide_render = True
 
+
 @persistent
 def auto_restorelight_scene(dummy):
-    1
+    global LAS_newLight
+    global LAS_originLight
+    for light in LAS_originLight:
+        obj = bpy.data.objects.get(light)
+        obj.hide_render = False
+    for light in LAS_newLight:
+        obj = bpy.data.objects.get(light)
+        bpy.data.objects.remove(obj, do_unlink=True)
+    LAS_originLight = []
+    LAS_newLight = []

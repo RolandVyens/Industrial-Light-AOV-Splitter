@@ -113,7 +113,8 @@ def auto_assignlight_scene():
                     if object.type == "LIGHT":
                         lights.append(object.name)
                 light_dict[viewlayer.name] = lights
-    temp_light = []
+    LAS_originLight = []
+    LAS_newLight = []
     for key in lightgroup_dict.keys():
         for lightgroup in lightgroup_dict[key]:
             for lobe in ["diffuse_", "specular_", "transmission_", "volume_"]:
@@ -137,6 +138,7 @@ def auto_assignlight_scene():
                             duplicate.visible_glossy = False
                             duplicate.visible_transmission = False
                             duplicate.visible_volume_scatter = False
+                            LAS_newLight.append(duplicate.name)
                             if lobe == "diffuse_":
                                 duplicate.visible_diffuse = True
                             if lobe == "specular_":
@@ -145,8 +147,8 @@ def auto_assignlight_scene():
                                 duplicate.visible_transmission = True
                             if lobe == "volume_":
                                 duplicate.visible_volume_scatter = True
-                            temp_light.append(light)
-    for light in temp_light:
+                            LAS_originLight.append(light)
+    for light in LAS_originLight:
         obj = bpy.data.objects.get(light)
         obj.hide_render = True
 
