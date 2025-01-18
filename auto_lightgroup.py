@@ -133,14 +133,18 @@ def auto_assignlight_scene():
                             ].objects.link(duplicate)
                             duplicate.name = f"{lobe}{light}"
                             duplicate.lightgroup = lightgroup
-                            if lobe != "diffuse_":
-                                duplicate.visible_diffuse = False
-                            if lobe != "specular_":
-                                duplicate.visible_glossy = False
-                            if lobe != "transmission_":
-                                duplicate.visible_transmission = False
-                            if lobe != "volume_":
-                                duplicate.visible_volume_scatter = False
+                            duplicate.visible_diffuse = False
+                            duplicate.visible_glossy = False
+                            duplicate.visible_transmission = False
+                            duplicate.visible_volume_scatter = False
+                            if lobe == "diffuse_":
+                                duplicate.visible_diffuse = True
+                            if lobe == "specular_":
+                                duplicate.visible_glossy = True
+                            if lobe == "transmission_":
+                                duplicate.visible_transmission = True
+                            if lobe == "volume_":
+                                duplicate.visible_volume_scatter = True
                             temp_light.append(light)
     for light in temp_light:
         obj = bpy.data.objects.get(light)
