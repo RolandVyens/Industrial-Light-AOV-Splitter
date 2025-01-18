@@ -24,6 +24,9 @@ class LAS_OT_InitAOV(bpy.types.Operator):
     def execute(self, context):
         auto_lightgroup()
         auto_lightaov()
+        self.report({"INFO"}, bpy.app.translations.pgettext("Created For Current Viewlayer"))
+
+        return {"FINISHED"}
         
 
 class LAS_PT_oPanel_Base:
@@ -32,3 +35,4 @@ class LAS_PT_oPanel_Base:
         layout=self.layout
         col = layout.column()
         col.scale_y = 3
+        col.operator(LAS_OT_InitAOV.bl_idname, icon="OUTLINER_OB_LIGHT")
