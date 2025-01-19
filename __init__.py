@@ -98,7 +98,7 @@ class LAS_PT_oPanel_N(bpy.types.Panel, LAS_PT_oPanel_Base):
         addon_prefs = preferences.addons[__package__].preferences
         # Ensure the panel only shows when in the compositor editor
         return (
-            context.space_data.tree_type == "CompositorNodeTree"
+            context.space_data.type == "VIEW_3D"
             and addon_prefs.UI_Show_In_Comp is True
         )
 

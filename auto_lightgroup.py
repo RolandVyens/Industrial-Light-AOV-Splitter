@@ -12,7 +12,6 @@ def auto_lightgroup():
             "lgt_" in collection.name
             and lc.exclude is False
             and lc.hide_viewport is False
-            and lc.hide_render is False
         ):
             for obj in collection.all_objects:
                 if obj.type == "LIGHT":
