@@ -1,13 +1,13 @@
 bl_info = {
-    "name": "Industrial Light Splitter",
+    "name": "Industrial Light AOV Splitter",
     "author": "Roland Vyens",
-    "version": (0, 1, 0),  # bump doc_url as well!
+    "version": (0, 2, 0),  # bump doc_url as well!
     "blender": (4, 0, 0),
     "location": "Viewlayer tab in properties panel.",
     "description": "Auto generate outputs for advanced compositing.",
     "category": "Render",
-    "doc_url": "https://github.com/RolandVyens/Light-AOV-Splitter",
-    "tracker_url": "https://github.com/RolandVyens/Light-AOV-Splitter",
+    "doc_url": "https://github.com/RolandVyens/Industrial-Light-AOV-Splitter",
+    "tracker_url": "https://github.com/RolandVyens/Industrial-Light-AOV-Splitter",
 }
 
 import bpy
@@ -59,16 +59,15 @@ class LAS_PT_oPanel_Base:
 
 
 class LAS_PT_oPanel(bpy.types.Panel, LAS_PT_oPanel_Base):
-    bl_label = "Industrial Light Splitter"
+    bl_label = "Industrial Light AOV Splitter"
     bl_idname = "RENDER_PT_industrialsplitter"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "view_layer"
-    bl_order = 1
 
 
 class LAS_PT_oPanel_COMP(bpy.types.Panel, LAS_PT_oPanel_Base):
-    bl_label = "Industrial Light Splitter"
+    bl_label = "Industrial Light AOV Splitter"
     bl_idname = "COMP_PT_industrialsplitter"
     bl_space_type = "NODE_EDITOR"
     bl_region_type = "UI"
@@ -86,7 +85,7 @@ class LAS_PT_oPanel_COMP(bpy.types.Panel, LAS_PT_oPanel_Base):
 
 
 class LAS_PT_oPanel_N(bpy.types.Panel, LAS_PT_oPanel_Base):
-    bl_label = "Industrial Light Splitter"
+    bl_label = "Industrial Light AOV Splitter"
     bl_idname = "3DVIEW_PT_industrialsplitter"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -98,8 +97,7 @@ class LAS_PT_oPanel_N(bpy.types.Panel, LAS_PT_oPanel_Base):
         addon_prefs = preferences.addons[__package__].preferences
         # Ensure the panel only shows when in the compositor editor
         return (
-            context.space_data.type == "VIEW_3D"
-            and addon_prefs.UI_Show_In_Comp is True
+            context.space_data.type == "VIEW_3D" and addon_prefs.UI_Show_In_Comp is True
         )
 
 
