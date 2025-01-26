@@ -50,7 +50,9 @@ def auto_lightaov():
     lightdict = {}
     visible_set = []
     for light in real_lights:
-        lightobj = bpy.context.view_layer.objects.get(light)
+        for any in bpy.context.view_layer.objects:
+            if light in any.name:
+                lightobj = any
         visible_set = [
             lightobj.visible_diffuse,
             lightobj.visible_glossy,
@@ -84,7 +86,7 @@ def auto_assignlight():
             if lightgroup.startswith(f"{lobe}"):
                 light = lightgroup.removeprefix(f"{lobe}")
                 for light_object in light_objects:
-                    if light_object.name == light or light_object.name[:-4] == light:
+                    if light_object.name == light or light_object.name.split(".")[0] == light:
                         obj = bpy.data.objects.get(light_object.name)
                         duplicate = obj.copy()
                         duplicate.data = obj.data.copy()

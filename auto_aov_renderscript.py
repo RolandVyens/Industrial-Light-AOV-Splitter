@@ -36,7 +36,7 @@ def auto_assignlight_scene(dummy):
                         light_object = bpy.context.scene.objects.get(light_object_name)
                         if (
                             light_object.name == light
-                            or light_object.name[:-4] == light
+                            or light_object.name.split(".")[0] == light
                         ):
                             obj = bpy.data.objects.get(light_object.name)
                             duplicate = obj.copy()
