@@ -2,7 +2,7 @@ schema_version = "1.0.0"
 
 
 id = "Industrial_Light_AOV_Splitter"
-version = "0.2.0"
+version = "0.3.0"
 name = "Industrial Light AOV Splitter"
 tagline = "Auto generate outputs for advanced compositing"
 maintainer = "Roland Vyens"

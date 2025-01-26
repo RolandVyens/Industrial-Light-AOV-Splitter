@@ -1,8 +1,8 @@
 bl_info = {
     "name": "Industrial Light AOV Splitter",
     "author": "Roland Vyens",
-    "version": (0, 2, 0),  # bump doc_url as well!
-    "blender": (4, 0, 0),
+    "version": (0, 3, 0),  # bump doc_url as well!
+    "blender": (3, 6, 0),
     "location": "Viewlayer tab in properties panel.",
     "description": "Auto generate outputs for advanced compositing.",
     "category": "Render",
