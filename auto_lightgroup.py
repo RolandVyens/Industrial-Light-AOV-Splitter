@@ -15,9 +15,16 @@ def auto_lightgroup():
         ):
             for obj in collection.all_objects:
                 if obj.type == "LIGHT":
-                    light_list.append(obj.name)
-                    bpy.ops.scene.view_layer_add_lightgroup(name=f"{obj.name}")
-                    obj.lightgroup = obj.name
+                    if "." in obj.name:
+                        lightgroup = obj.name.split(".")[0]
+                        light_list.append(obj.name)
+                        bpy.ops.scene.view_layer_add_lightgroup(name=f"{lightgroup}")
+                        obj.lightgroup = lightgroup
+                    else:
+                        lightgroup = obj.name
+                        light_list.append(obj.name)
+                        bpy.ops.scene.view_layer_add_lightgroup(name=f"{lightgroup}")
+                        obj.lightgroup = lightgroup
     print(light_list)
     bpy.ops.scene.view_layer_remove_unused_lightgroups()
 
