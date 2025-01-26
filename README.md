@@ -1,2 +1,2 @@
-# Industrial Light Splitter
+# Industrial Light AOV Splitter
  Split blender light into material aovs
