@@ -69,11 +69,23 @@ def auto_assignlight_scene(dummy):
 def auto_restorelight_scene(dummy):
     global LAS_newLight
     global LAS_originLight
-    for light in LAS_originLight:
-        obj = bpy.data.objects.get(light)
-        obj.hide_render = False
-    for light in LAS_newLight:
-        obj = bpy.data.objects.get(light)
-        bpy.data.objects.remove(obj, do_unlink=True)
+    if LAS_originLight:
+        for light in LAS_originLight:
+            obj = bpy.data.objects.get(light)
+            obj.hide_render = False
+    if LAS_newLight:
+        for light in LAS_newLight:
+            obj = bpy.data.objects.get(light)
+            if obj:
+                # Unlink from all collections
+                for collection in obj.users_collection:
+                    collection.objects.unlink(obj)
+
+                # Unlink from the scene if it's directly linked
+                if obj in bpy.context.scene.objects:
+                    bpy.context.scene.objects.unlink(obj)
+
+                # Safely remove the object
+                bpy.data.objects.remove(obj, do_unlink=True)
     LAS_originLight = []
     LAS_newLight = []
