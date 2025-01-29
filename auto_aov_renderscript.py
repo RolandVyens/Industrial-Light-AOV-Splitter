@@ -82,7 +82,7 @@ def auto_restorelight_scene(dummy):
                     collection.objects.unlink(obj)
 
                 # Unlink from the scene if it's directly linked
-                if obj in bpy.context.scene.objects:
+                if obj and obj.name in bpy.context.scene.objects:
                     bpy.context.scene.objects.unlink(obj)
 
                 # Safely remove the object
