@@ -59,7 +59,9 @@ def auto_assignlight_scene(dummy):
                                 duplicate.visible_transmission = True
                             if lobe == "volume_":
                                 duplicate.visible_volume_scatter = True
-                            LAS_originLight.append(light)
+                            LAS_originLight.append(light_object_name)
+    LAS_originLight = list(set(LAS_originLight))
+    LAS_newLight = list(set(LAS_newLight))
     for light in LAS_originLight:
         obj = bpy.data.objects.get(light)
         obj.hide_render = True
