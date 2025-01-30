@@ -49,6 +49,19 @@ class LAS_OT_InitAOV(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class LAS_OT_CloudMode(bpy.types.Operator):
+    bl_idname = "object.initcloudmode"
+    bl_label = "Renderfarm Prepare"
+    bl_description = "Precreate all lights in order to send to render farm"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        auto_assignlight_scene(bpy.context.scene)
+        self.report({"INFO"}, bpy.app.translations.pgettext("Pre-created All Lights"))
+
+        return {"FINISHED"}
+
+
 class LAS_PT_oPanel_Base:
 
     def draw(self, context):
@@ -56,6 +69,7 @@ class LAS_PT_oPanel_Base:
         col = layout.column()
         col.scale_y = 3
         col.operator(LAS_OT_InitAOV.bl_idname, icon="OUTLINER_OB_LIGHT")
+        col.operator(LAS_OT_CloudMode.bl_idname, icon="SCREEN_BACK")
 
 
 class LAS_PT_oPanel(bpy.types.Panel, LAS_PT_oPanel_Base):
