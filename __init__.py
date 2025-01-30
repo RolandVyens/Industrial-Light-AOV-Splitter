@@ -69,7 +69,8 @@ class LAS_PT_oPanel_Base:
         col = layout.column()
         col.scale_y = 3
         col.operator(LAS_OT_InitAOV.bl_idname, icon="OUTLINER_OB_LIGHT")
-        col.operator(LAS_OT_CloudMode.bl_idname, icon="SCREEN_BACK")
+        layout.label(text='Tools:')
+        layout.operator(LAS_OT_CloudMode.bl_idname, icon="SCREEN_BACK")
 
 
 class LAS_PT_oPanel(bpy.types.Panel, LAS_PT_oPanel_Base):
