@@ -122,6 +122,7 @@ reg_clss = [
     LAS_PT_oPanel,
     LAS_PT_oPanel_COMP,
     LAS_PT_oPanel_N,
+    LAS_OT_CloudMode
 ]
 
 
