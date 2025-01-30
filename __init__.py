@@ -50,7 +50,7 @@ class LAS_OT_InitAOV(bpy.types.Operator):
 
 
 class LAS_OT_CloudMode(bpy.types.Operator):
-    bl_idname = "object.initcloudmode"
+    bl_idname = "object.initcloudmodeLAS"
     bl_label = "Renderfarm Prepare"
     bl_description = "Precreate all lights in order to send to render farm"
     bl_options = {"REGISTER", "UNDO"}
