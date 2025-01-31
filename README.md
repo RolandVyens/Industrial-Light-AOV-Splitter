@@ -35,3 +35,13 @@ Automatically create light groups for eligible lights in a seamless manner, sepa
 3. **Put your lights in collections whose name starts with "lgt_".**
 4. **Naming your light properly with letters and numbers only. Do not use any "_"**
 5. **If you want to reuse light group between multiple lights, just duplicate the lights and keep their auto-generated ".001" number suffix, they'll be ignored and revert back to the desired name.**
+
+---
+
+### 使用方法：
+
+1. **Blender灯光组AOV存储在视图层级别，因此目前此插件按视图层运行。在4.4版本中，将有一种新方法来创建场景中的所有灯光组。**
+![屏幕截图 2025-01-31 235127](https://github.com/user-attachments/assets/195364a8-76fe-4985-9933-1f84b849efd5)
+3. **将你的灯光放入名称以“lgt_”开头的集合中。**
+4. **正确命名你的灯光，仅使用字母和数字。不要使用任何下划线（“_”）。**
+5. **如果你想在多个灯光之间重用灯光组，只需复制灯光并保留其自动生成的“.001”编号后缀。它们将被忽略并恢复为所需的名称。**
