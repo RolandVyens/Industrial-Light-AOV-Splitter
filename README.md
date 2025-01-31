@@ -26,3 +26,10 @@ Automatically create light groups for eligible lights in a seamless manner, sepa
 1. initial release, with basic functions.
 
 ---
+
+### HOW TO USE:
+
+**1. Blender light group aovs are stored at viewlayer level, so this plugin runs per viewlayer by now (in 4.4 there will be a new method to create all light groups in a scene). **
+**2. Put your lights in collections whose name starts with "lgt_". **
+**3. Naming your light properly with letters and numbers only. Do not use any "_" "." **
+**4. If you want to reuse light group between multiple lights, just duplicate the lights and keep their auto-generated ".001" number suffix, they'll be ignored and revert back to the desired name. **
