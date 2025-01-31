@@ -9,4 +9,10 @@
 
 **Plugin panel location: Properties Panel→View Layer**
 
+======================
+
 目前支持3.6 - 最新版 Supports blender 3.6 - newest by now (2025.01.31)
+
+通过基本无感的方式，自动给符合条件的灯创建灯光组，把灯光分离成diffuse, specular, transmission, volume四个通道(如diffuse_env, specular_env...)，以取得与行业接轨的可控性（合成软件内）。
+
+Automatically create light groups for eligible lights in a seamless manner, separating the lights into four channels: diffuse, specular, transmission, and volume (e.g., diffuse_env, specular_env...), to achieve industry-standard controllability during the compositing stage.
