@@ -11,6 +11,8 @@
 
 **Plugin panel location: Properties Panel→View Layer**
 
+recommended to use with [Industrial AOV Connector](https://github.com/RolandVyens/Industrial-AOV-Connector)
+
 ======================
 
 目前支持3.6 - 最新版 Supports blender 3.6 - newest by now (2025.01.31)
