@@ -45,3 +45,27 @@ Automatically create light groups for eligible lights in a seamless manner, sepa
 3. **将你的灯光放入名称以“lgt_”开头的集合中。**
 4. **正确命名你的灯光，仅使用字母和数字。不要使用任何下划线（“_”）。**
 5. **如果你想在多个灯光之间重用灯光组，只需复制灯光并保留其自动生成的“.001”编号后缀。它们将被忽略并恢复为所需的名称。**
+
+---
+
+### Nuke auto shuffle script installation
+
+1. copy the `nuke_blender_autoaov.py` to your .nuke directory
+2. in your `menu.py` (create one if there's no such file in .nuke), paste the following code:
+   ```
+   import nuke_blender_autoaov
+   utilitiesMenu = nuke.menu('Nuke').addMenu('Industrial')
+   utilitiesMenu.addCommand('nuke_blender_autoaov','nuke_blender_autoaov.shuffle_and_combine_light_groups()')
+   ```
+
+---
+
+### Nuke自动shuffle脚本安装
+
+1. 将 `nuke_blender_autoaov.py` 复制到你的 .nuke 目录中
+2. 在你的 `menu.py` 文件中（如果 .nuke 中没有此文件，请创建一个），粘贴以下代码：
+   ```
+   import nuke_blender_autoaov
+   utilitiesMenu = nuke.menu('Nuke').addMenu('Industrial')
+   utilitiesMenu.addCommand('nuke_blender_autoaov','nuke_blender_autoaov.shuffle_and_combine_light_groups()')
+   ```
