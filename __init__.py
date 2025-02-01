@@ -4,7 +4,7 @@ bl_info = {
     "version": (0, 5, 0),  # bump doc_url as well!
     "blender": (3, 6, 0),
     "location": "Viewlayer tab in properties panel.",
-    "description": "Auto create better light aovs (diffuse_light1, specular_light1...)",
+    "description": "Auto create better light aovs (diffuse_env, specular_env...)",
     "category": "Render",
     "doc_url": "https://github.com/RolandVyens/Industrial-Light-AOV-Splitter",
     "tracker_url": "https://github.com/RolandVyens/Industrial-Light-AOV-Splitter",
