@@ -21,6 +21,10 @@ recommended to use with [Industrial AOV Connector](https://github.com/RolandVyen
 
 Automatically create light groups for eligible lights in a seamless manner, separating the lights into four channels: diffuse, specular, transmission, and volume (e.g., diffuse_env, specular_env...), to achieve industry-standard controllability during the compositing stage.
 
+**有配套的nuke自动shuffle脚本！**
+
+**Comes with a nuke auto-shuffle-combine script!**
+
 ---
 **Update Log:**
 2025.1.31: version 0.5.0
