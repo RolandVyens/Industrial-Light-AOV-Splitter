@@ -25,6 +25,8 @@ Automatically create light groups for eligible lights in a seamless manner, sepa
 
 **Comes with a nuke auto-shuffle-combine script!**
 
+join our [discord](https://discord.gg/UNHGnFEK)
+
 ---
 **Update Log:**
 2025.1.31: version 0.5.0
