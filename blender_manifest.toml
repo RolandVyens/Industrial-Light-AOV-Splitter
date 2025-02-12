@@ -2,7 +2,7 @@ schema_version = "1.0.0"
 
 
 id = "Industrial_Light_AOV_Splitter"
-version = "0.5.0"
+version = "0.5.1"
 name = "Industrial Light AOV Splitter"
 tagline = "Auto create better light aovs (diffuse_env, specular_env...)"
 maintainer = "Roland Vyens"

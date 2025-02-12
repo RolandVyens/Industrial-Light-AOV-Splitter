@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Industrial Light AOV Splitter",
     "author": "Roland Vyens",
-    "version": (0, 5, 0),  # bump doc_url as well!
+    "version": (0, 5, 1),  # bump doc_url as well!
     "blender": (3, 6, 0),
     "location": "Viewlayer tab in properties panel.",
     "description": "Auto create better light aovs (diffuse_env, specular_env...)",
@@ -101,7 +101,7 @@ class LAS_PT_oPanel_COMP(bpy.types.Panel, LAS_PT_oPanel_Base):
 
 class LAS_PT_oPanel_N(bpy.types.Panel, LAS_PT_oPanel_Base):
     bl_label = "Industrial Light AOV Splitter"
-    bl_idname = "3DVIEW_PT_industrialsplitter"
+    bl_idname = "VIEW3D_PT_industrialsplitter"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Industrial"
