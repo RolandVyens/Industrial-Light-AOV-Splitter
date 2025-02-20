@@ -11,6 +11,8 @@
 
 **Plugin panel location: Properties Panel→View Layer**
 
+Install on [blender extensions](https://extensions.blender.org/add-ons/industrial-light-aov-splitter/)
+
 recommended to use with [Industrial AOV Connector](https://github.com/RolandVyens/Industrial-AOV-Connector)
 
 ======================
