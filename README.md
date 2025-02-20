@@ -19,7 +19,7 @@ recommended to use with [Industrial AOV Connector](https://github.com/RolandVyen
 
 通过基本无感的方式，自动给符合条件的灯创建灯光组，把灯光分离成diffuse, specular, transmission, volume四个通道(如diffuse_env, specular_env...)，以取得与行业接轨的可控性（合成软件内）。
 
-Separate the lights into four channels: diffuse, specular, transmission, and volume (e.g., diffuse_env, specular_env...) with one click, to achieve industry-standard controllability during the compositing stage.
+Separate the light groups into four channels: diffuse, specular, transmission, and volume (e.g., diffuse_env, specular_env...) with one click, to achieve industry-standard controllability during the compositing stage.
 
 **有配套的nuke自动shuffle脚本！**
 
