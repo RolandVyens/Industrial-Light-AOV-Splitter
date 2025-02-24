@@ -58,6 +58,8 @@ join our [discord](https://discord.gg/UNHGnFEK)
 5. **点击唯一的功能按钮为当前视图层生成灯光组。注意只有启用的集合才会被处理。**
 6. **如果你想在多个灯光之间重用灯光组，只需复制灯光并保留其自动生成的“.001”编号后缀。它们将被忽略并恢复为所需的名称。**
 
+### [Fr. document](https://github.com/RolandVyens/Industrial-Light-AOV-Splitter/blob/main/misc/Industrial_Light_AOV_slitter_manual_French.pdf)
+
 ---
 
 ### Nuke auto shuffle script installation
