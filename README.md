@@ -62,6 +62,8 @@ join our [discord](https://discord.gg/UNHGnFEK)
 
 ### Nuke auto shuffle script installation
 
+[**Download**](https://github.com/RolandVyens/Industrial-Light-AOV-Splitter/releases/download/release0.5.0/nuke_blender_autoaov.py)
+
 <img width="1920" alt="屏幕截图 2025-02-24 140802" src="https://github.com/user-attachments/assets/1e684633-bf7c-4e89-ae0e-237df29db643" />
 
 1. copy the `nuke_blender_autoaov.py` to your .nuke directory
