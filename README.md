@@ -27,7 +27,7 @@ Separate the light groups into four channels: diffuse, specular, transmission, a
 
 **Comes with a nuke auto-shuffle-combine script!**
 
-join our [discord](https://discord.gg/UNHGnFEK)
+join our [discord](https://discord.gg/wGzAAQSMce)
 
 ---
 **Update Log:**
