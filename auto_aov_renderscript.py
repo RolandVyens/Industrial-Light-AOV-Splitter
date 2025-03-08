@@ -1,5 +1,6 @@
 import bpy
 from bpy.app.handlers import persistent
+from mathutils import Vector
 
 
 @persistent
@@ -27,6 +28,7 @@ def auto_assignlight_scene(dummy):
                 light_dict[viewlayer.name] = lights
     LAS_originLight = []
     LAS_newLight = []
+    offset_local = Vector((0, 0, 0.0001))
     for key in lightgroup_dict.keys():
         for lightgroup in lightgroup_dict[key]:
             for lobe in ["diffuse_", "specular_", "transmission_", "volume_"]:
@@ -50,6 +52,8 @@ def auto_assignlight_scene(dummy):
                             duplicate.visible_glossy = False
                             duplicate.visible_transmission = False
                             duplicate.visible_volume_scatter = False
+                            offset_world = duplicate.matrix_world.to_quaternion() @ offset_local
+                            duplicate.location += offset_world
                             LAS_newLight.append(duplicate.name)
                             if lobe == "diffuse_":
                                 duplicate.visible_diffuse = True
