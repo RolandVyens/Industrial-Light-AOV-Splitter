@@ -30,10 +30,11 @@ def auto_assignlight_scene(dummy):
     LAS_newLight = []
     for key in lightgroup_dict.keys():
         for lightgroup in lightgroup_dict[key]:
-            for lobe in ["diffuse_", "specular_", "transmission_", "volume_"]:
+            for i, lobe in enumerate(["diffuse_", "specular_", "transmission_", "volume_"]):
+                z = 0.001 * i
+                offset_local = Vector((0, 0, z))
                 if lightgroup.startswith(f"{lobe}"):
                     light = lightgroup.removeprefix(f"{lobe}")
-                    offset_local = Vector((0, 0, 0.0001))
                     for light_object_name in light_dict[key]:
                         light_object = bpy.context.scene.objects.get(light_object_name)
                         if (
@@ -66,7 +67,6 @@ def auto_assignlight_scene(dummy):
                             if lobe == "volume_":
                                 duplicate.visible_volume_scatter = True
                             LAS_originLight.append(light_object_name)
-                        offset_local += Vector((0, 0, 0.0001))
     LAS_originLight = list(set(LAS_originLight))
     LAS_newLight = list(set(LAS_newLight))
     for light in LAS_originLight:
