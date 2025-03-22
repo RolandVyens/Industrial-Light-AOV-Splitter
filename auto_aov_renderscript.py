@@ -31,7 +31,7 @@ def auto_assignlight_scene(dummy):
     for key in lightgroup_dict.keys():
         for lightgroup in lightgroup_dict[key]:
             for i, lobe in enumerate(["diffuse_", "specular_", "transmission_", "volume_"]):
-                z = 0.001 * i
+                z = 0.002 * i
                 offset_local = Vector((0, 0, z))
                 if lightgroup.startswith(f"{lobe}"):
                     light = lightgroup.removeprefix(f"{lobe}")
@@ -71,6 +71,7 @@ def auto_assignlight_scene(dummy):
     LAS_newLight = list(set(LAS_newLight))
     for light in LAS_originLight:
         obj = bpy.data.objects.get(light)
+        obj.hide_viewport = True
         obj.hide_render = True
 
 

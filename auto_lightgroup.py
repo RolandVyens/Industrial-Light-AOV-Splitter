@@ -28,8 +28,6 @@ def auto_lightgroup():
     print(light_list)
     bpy.ops.scene.view_layer_remove_unused_lightgroups()
 
-    return {"finished"}
-
 
 def auto_lightaov():
     view_layer = bpy.context.view_layer
@@ -71,8 +69,6 @@ def auto_lightaov():
             bpy.ops.scene.view_layer_add_lightgroup(name=f"volume_{light}")
     # print(lightdict)
 
-    return {"finished"}
-
 
 def auto_assignlight():
     view_layer = bpy.context.view_layer
@@ -86,7 +82,10 @@ def auto_assignlight():
             if lightgroup.startswith(f"{lobe}"):
                 light = lightgroup.removeprefix(f"{lobe}")
                 for light_object in light_objects:
-                    if light_object.name == light or light_object.name.split(".")[0] == light:
+                    if (
+                        light_object.name == light
+                        or light_object.name.split(".")[0] == light
+                    ):
                         obj = bpy.data.objects.get(light_object.name)
                         duplicate = obj.copy()
                         duplicate.data = obj.data.copy()
@@ -97,8 +96,6 @@ def auto_assignlight():
     for light in temp_light:
         obj = bpy.data.objects.get(light)
         obj.hide_render = True
-
-    return {"finished"}
 
 
 def auto_assignlight_scene():
@@ -164,4 +161,61 @@ def auto_assignlight_scene():
     print(lightcollection_dict)
     print(light_dict)
 
-    return {"finished"}
+
+def auto_assign_world():
+    if bpy.context.scene.world is not None:
+        bpy.context.scene.world.lightgroup = "env"
+
+    view_layer = bpy.context.view_layer
+    if "env" not in view_layer.lightgroups:
+        view_layer.lightgroups.add(name="env")
+
+
+def assign_all_objects():
+    LIGHT_GROUP_NAME = "emissive_default"
+    view_layer = bpy.context.view_layer
+    if LIGHT_GROUP_NAME not in view_layer.lightgroups:
+        view_layer.lightgroups.new(name=LIGHT_GROUP_NAME)
+    for obj in bpy.context.scene.objects:
+        if obj.type != "LIGHT":  # Exclude lights
+            obj.lightgroup = LIGHT_GROUP_NAME
+
+    print(f'Assigned "{LIGHT_GROUP_NAME}" light group to all non-light objects.')
+
+
+def list_objects_with_emissive_material():
+    objects_with_emissive_material = []
+    for obj in bpy.context.scene.objects:
+        if obj.material_slots and obj.lightgroup == "":
+            for slot in obj.material_slots:
+                if slot.material:
+                    if slot.material.node_tree:
+                        emissive_found = False
+                        for node in slot.material.node_tree.nodes:
+                            if node.type == "EMISSION":
+                                objects_with_emissive_material.append(obj.name)
+                                emissive_found = True
+                                break
+                            elif node.type in {"BSDF_PRINCIPLED", "VOLUME_PRINCIPLED"}:
+                                if (
+                                    node.inputs.get("Emission")
+                                    and node.inputs["Emission"].default_value[0] > 0
+                                ):
+                                    objects_with_emissive_material.append(obj.name)
+                                    emissive_found = True
+                                    break
+
+    return objects_with_emissive_material
+
+
+def assign_missing_object():
+    objects_with_emissive_material = list_objects_with_emissive_material()
+    if "emissive_default" not in bpy.context.view_layer.lightgroups:
+        bpy.context.view_layer.lightgroups.add(name="emissive_default")
+    if objects_with_emissive_material:
+        print("Objects with emissive material and no light group:")
+        for obj in objects_with_emissive_material:
+            print(obj)
+            for obj1 in bpy.context.scene.objects:
+                if obj1.name == obj:
+                    obj1.lightgroup = "emissive_default"

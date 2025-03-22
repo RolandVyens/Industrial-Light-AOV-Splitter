@@ -13,7 +13,12 @@ bl_info = {
 import bpy
 from bpy.types import Operator, AddonPreferences
 from bpy.props import BoolProperty
-from .auto_lightgroup import auto_lightgroup, auto_lightaov
+from .auto_lightgroup import (
+    auto_lightgroup,
+    auto_lightaov,
+    auto_assign_world,
+    assign_missing_object,
+)
 from .auto_aov_renderscript import auto_assignlight_scene, auto_restorelight_scene
 
 
@@ -33,9 +38,24 @@ class LAS_AddonPrefs(AddonPreferences):
         layout.prop(self, "UI_Show_In_Comp")
 
 
+class LAS_OT_InitAOVSimple(bpy.types.Operator):
+    bl_idname = "object.initlightsimple"
+    bl_label = "Make Simple Light AOVs For Current Layer"
+    bl_description = 'This will look for all enabled collections which name starts with "lgt_" and create splitted light aovs for all lights in it'
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        auto_lightgroup()
+        self.report(
+            {"INFO"}, bpy.app.translations.pgettext("Created For Current Viewlayer")
+        )
+
+        return {"FINISHED"}
+
+
 class LAS_OT_InitAOV(bpy.types.Operator):
     bl_idname = "object.initlightaov"
-    bl_label = "Make Light AOVs For Current Layer"
+    bl_label = "Make Advanced Light AOVs For Current Layer"
     bl_description = 'This will look for all enabled collections which name starts with "lgt_" and create splitted light aovs for all lights in it'
     bl_options = {"REGISTER", "UNDO"}
 
@@ -68,8 +88,9 @@ class LAS_PT_oPanel_Base:
         layout = self.layout
         col = layout.column()
         col.scale_y = 3
+        col.operator(LAS_OT_InitAOVSimple.bl_idname, icon="LIGHT")
         col.operator(LAS_OT_InitAOV.bl_idname, icon="OUTLINER_OB_LIGHT")
-        layout.label(text='Tools:')
+        layout.label(text="Tools:")
         layout.operator(LAS_OT_CloudMode.bl_idname, icon="SCREEN_BACK")
 
 
@@ -119,11 +140,12 @@ class LAS_PT_oPanel_N(bpy.types.Panel, LAS_PT_oPanel_Base):
 """以下为注册函数"""
 reg_clss = [
     LAS_AddonPrefs,
+    LAS_OT_InitAOVSimple,
     LAS_OT_InitAOV,
     LAS_PT_oPanel,
     LAS_PT_oPanel_COMP,
     LAS_PT_oPanel_N,
-    LAS_OT_CloudMode
+    LAS_OT_CloudMode,
 ]
 
 
