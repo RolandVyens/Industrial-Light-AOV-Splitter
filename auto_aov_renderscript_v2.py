@@ -15,13 +15,15 @@ def auto_assignlight_scene(dummy):
             for lightgroup in viewlayer.lightgroups:
                 lightgroups.append(lightgroup.name)
             lightgroup_dict[viewlayer.name] = lightgroups
+        lights = []
         for collection in viewlayer.layer_collection.children:
             if collection.name.startswith("lgt_") and collection.exclude == False:
-                lights = []
                 for object in bpy.data.collections[collection.name].all_objects:
                     if object.type == "LIGHT":
                         lights.append(object.name)
-                light_dict[viewlayer.name] = lights
+        light_dict[viewlayer.name] = lights
+    print(lightgroup_dict)
+    print(light_dict)
     LAS_originLight = []
     LAS_newLight = []
     fixmode = bpy.context.scene.LAS_fixMissingLight
@@ -43,6 +45,7 @@ def auto_assignlight_scene(dummy):
                         ):
                             obj = bpy.data.objects.get(light_object.name)
                             light_collection = [i for i in obj.users_collection]
+                            print(light_collection)
                             duplicate = obj.copy()
                             duplicate.data = obj.data.copy()
                             for col in light_collection:

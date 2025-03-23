@@ -21,16 +21,8 @@ from .auto_lightgroup import (
 )
 from .auto_aov_renderscript_v2 import auto_assignlight_scene, auto_restorelight_scene
 
+
 """配置"""
-
-bpy.types.Scene.LAS_fixMissingLight = bpy.props.BoolProperty(  # 是否使用修复模式
-    name="Large Scale Mode",
-    description="When turned on, fix missing light due to extreme large scene scale",
-    default=False,
-)
-
-
-"""操作符"""
 
 
 class LAS_AddonPrefs(AddonPreferences):
@@ -49,9 +41,26 @@ class LAS_AddonPrefs(AddonPreferences):
         layout.prop(self, "UI_Show_In_Comp")
 
 
+bpy.types.Scene.LAS_fixMissingLight = bpy.props.BoolProperty(  # 是否使用修复模式
+    name="Large Scale Mode",
+    description="When turned on, fix missing light due to extreme large scene scale",
+    default=False,
+)
+
+
+bpy.types.Scene.LAS_sceneMode = bpy.props.BoolProperty(  # 是否使用修复模式
+    name="Whole Scene Mode",
+    description="When turned on, the light aov creation will be scene-wise instead of per-viewlayer, only works on blender 4.4 and higher",
+    default=False,
+)
+
+
+"""操作符"""
+
+
 class LAS_OT_InitAOVSimple(bpy.types.Operator):
     bl_idname = "object.initlightsimple"
-    bl_label = "Make Simple Light AOVs For Current Layer"
+    bl_label = "Make Simple Light AOVs"
     bl_description = 'This will look for all enabled collections which name starts with "lgt_" and create simple light aovs for all lights in it'
     bl_options = {"REGISTER", "UNDO"}
 
@@ -66,7 +75,7 @@ class LAS_OT_InitAOVSimple(bpy.types.Operator):
 
 class LAS_OT_InitAOV(bpy.types.Operator):
     bl_idname = "object.initlightaov"
-    bl_label = "Make Advanced Light AOVs For Current Layer"
+    bl_label = "Make Advanced Light AOVs"
     bl_description = 'This will look for all enabled collections which name starts with "lgt_" and create splitted light aovs for all lights in it'
     bl_options = {"REGISTER", "UNDO"}
 
@@ -83,7 +92,7 @@ class LAS_OT_InitAOV(bpy.types.Operator):
 class LAS_OT_CloudMode(bpy.types.Operator):
     bl_idname = "object.cloudmodelas"
     bl_label = "Test Light/Renderfarm Prepare"
-    bl_description = "Precreate all lights in order to test or send to cloud render farm without installing the plugin"
+    bl_description = "Precreate all lights to see if the newly-created light matches the original ones, best to perform in viewport shading mode. Or send to cloud render farm without installing the plugin"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
@@ -95,7 +104,7 @@ class LAS_OT_CloudMode(bpy.types.Operator):
 
 class LAS_OT_AssignMissing(bpy.types.Operator):
     bl_idname = "object.assignmissing"
-    bl_label = "Auto Assign Light Group For World And Emissive"
+    bl_label = "Auto Assign Emission Objects"
     bl_description = 'This will look for all enabled collections which name starts with "lgt_" and create splitted light aovs for all lights in it'
     bl_options = {"REGISTER", "UNDO"}
 
