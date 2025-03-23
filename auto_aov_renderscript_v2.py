@@ -8,7 +8,6 @@ def auto_assignlight_scene(dummy):
     global LAS_newLight
     global LAS_originLight
     lightgroup_dict = {}
-    lightcollection_dict = {}
     light_dict = {}
     for viewlayer in bpy.context.scene.view_layers:
         if viewlayer.name[:7] != "-_-exP_" and "_DATA" not in viewlayer.name:
@@ -17,10 +16,7 @@ def auto_assignlight_scene(dummy):
                 lightgroups.append(lightgroup.name)
             lightgroup_dict[viewlayer.name] = lightgroups
         for collection in viewlayer.layer_collection.children:
-            light_collection = []
             if collection.name.startswith("lgt_") and collection.exclude == False:
-                light_collection.append(collection.name)
-                lightcollection_dict[viewlayer.name] = light_collection
                 lights = []
                 for object in bpy.data.collections[collection.name].all_objects:
                     if object.type == "LIGHT":
@@ -31,7 +27,9 @@ def auto_assignlight_scene(dummy):
     fixmode = bpy.context.scene.LAS_fixMissingLight
     for key in lightgroup_dict.keys():
         for lightgroup in lightgroup_dict[key]:
-            for i, lobe in enumerate(["diffuse_", "specular_", "transmission_", "volume_"]):
+            for i, lobe in enumerate(
+                ["diffuse_", "specular_", "transmission_", "volume_"]
+            ):
                 if fixmode is True:
                     z = 0.002 * i
                     offset_local = Vector((0, 0, z))
@@ -44,11 +42,11 @@ def auto_assignlight_scene(dummy):
                             or light_object.name.split(".")[0] == light
                         ):
                             obj = bpy.data.objects.get(light_object.name)
+                            light_collection = [i for i in obj.users_collection]
                             duplicate = obj.copy()
                             duplicate.data = obj.data.copy()
-                            bpy.data.collections[
-                                lightcollection_dict[key][0]
-                            ].objects.link(duplicate)
+                            for col in light_collection:
+                                col.objects.link(duplicate)
                             duplicate.name = f"{lobe}{light}"
                             duplicate.lightgroup = lightgroup
                             duplicate.visible_diffuse = False
@@ -57,7 +55,8 @@ def auto_assignlight_scene(dummy):
                             duplicate.visible_volume_scatter = False
                             if fixmode is True:
                                 offset_world = (
-                                    duplicate.matrix_world.to_quaternion() @ offset_local
+                                    duplicate.matrix_world.to_quaternion()
+                                    @ offset_local
                                 )
                                 duplicate.location += offset_world
                             LAS_newLight.append(duplicate.name)
@@ -85,18 +84,20 @@ def auto_restorelight_scene(dummy):
     if LAS_originLight:
         for light in LAS_originLight:
             obj = bpy.data.objects.get(light)
+            obj.hide_viewport = False
             obj.hide_render = False
     if LAS_newLight:
+        objects = bpy.context.scene.objects
         for light in LAS_newLight:
-            obj = bpy.data.objects.get(light)
+            obj = objects.get(light)
             if obj:
                 # Unlink from all collections
                 for collection in obj.users_collection:
                     collection.objects.unlink(obj)
 
                 # Unlink from the scene if it's directly linked
-                if obj and obj.name in bpy.context.scene.objects:
-                    bpy.context.scene.objects.unlink(obj)
+                if obj and obj.name in objects:
+                    objects.unlink(obj)
 
                 # Safely remove the object
                 bpy.data.objects.remove(obj, do_unlink=True)

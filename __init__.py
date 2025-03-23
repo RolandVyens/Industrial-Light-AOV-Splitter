@@ -22,7 +22,7 @@ from .auto_lightgroup import (
 from .auto_aov_renderscript_v2 import auto_assignlight_scene, auto_restorelight_scene
 
 """配置"""
- 
+
 bpy.types.Scene.LAS_fixMissingLight = bpy.props.BoolProperty(  # 是否使用修复模式
     name="Large Scale Mode",
     description="When turned on, fix missing light due to extreme large scene scale",
@@ -82,7 +82,7 @@ class LAS_OT_InitAOV(bpy.types.Operator):
 
 class LAS_OT_CloudMode(bpy.types.Operator):
     bl_idname = "object.cloudmodelas"
-    bl_label = "TEST/Renderfarm Prepare"
+    bl_label = "Test Light/Renderfarm Prepare"
     bl_description = "Precreate all lights in order to test or send to cloud render farm without installing the plugin"
     bl_options = {"REGISTER", "UNDO"}
 
