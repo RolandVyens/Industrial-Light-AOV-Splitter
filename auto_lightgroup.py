@@ -163,12 +163,16 @@ def auto_assignlight_scene():
 
 
 def auto_assign_world():
-    if bpy.context.scene.world is not None:
-        bpy.context.scene.world.lightgroup = "env"
-
+    stat = None
+    world = bpy.context.scene.world
+    if world is not None and world.lightgroup is None:
+        world.lightgroup = "env"
+        stat = 1
     view_layer = bpy.context.view_layer
     if "env" not in view_layer.lightgroups:
         view_layer.lightgroups.add(name="env")
+
+    return stat
 
 
 def assign_all_objects():
@@ -209,7 +213,9 @@ def list_objects_with_emissive_material():
 
 
 def assign_missing_object():
+    stat = 0
     objects_with_emissive_material = list_objects_with_emissive_material()
+    stat = len(objects_with_emissive_material)
     if "emissive_default" not in bpy.context.view_layer.lightgroups:
         bpy.context.view_layer.lightgroups.add(name="emissive_default")
     if objects_with_emissive_material:
@@ -219,3 +225,5 @@ def assign_missing_object():
             for obj1 in bpy.context.scene.objects:
                 if obj1.name == obj:
                     obj1.lightgroup = "emissive_default"
+
+    return stat

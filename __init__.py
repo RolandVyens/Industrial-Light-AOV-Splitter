@@ -4,7 +4,7 @@ bl_info = {
     "version": (0, 6, 0),  # bump doc_url as well!
     "blender": (3, 6, 0),
     "location": "Viewlayer tab in properties panel.",
-    "description": "Auto create better light aovs (diffuse_env, specular_env...)",
+    "description": "Auto create better light aovs (diffuse_key, specular_key...)",
     "category": "Render",
     "doc_url": "https://github.com/RolandVyens/Industrial-Light-AOV-Splitter",
     "tracker_url": "https://github.com/RolandVyens/Industrial-Light-AOV-Splitter",
@@ -41,7 +41,7 @@ class LAS_AddonPrefs(AddonPreferences):
 class LAS_OT_InitAOVSimple(bpy.types.Operator):
     bl_idname = "object.initlightsimple"
     bl_label = "Make Simple Light AOVs For Current Layer"
-    bl_description = 'This will look for all enabled collections which name starts with "lgt_" and create splitted light aovs for all lights in it'
+    bl_description = 'This will look for all enabled collections which name starts with "lgt_" and create simple light aovs for all lights in it'
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
@@ -71,13 +71,35 @@ class LAS_OT_InitAOV(bpy.types.Operator):
 
 class LAS_OT_CloudMode(bpy.types.Operator):
     bl_idname = "object.cloudmodelas"
-    bl_label = "Renderfarm Prepare"
-    bl_description = "Precreate all lights in order to send to render farm"
+    bl_label = "TEST/Renderfarm Prepare"
+    bl_description = "Precreate all lights in order to test or send to cloud render farm without installing the plugin"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
         auto_assignlight_scene(bpy.context.scene)
         self.report({"INFO"}, bpy.app.translations.pgettext("Pre-created All Lights"))
+
+        return {"FINISHED"}
+
+
+class LAS_OT_AssignMissing(bpy.types.Operator):
+    bl_idname = "object.assignmissing"
+    bl_label = "Auto Assign Light Group For World And Emissive"
+    bl_description = 'This will look for all enabled collections which name starts with "lgt_" and create splitted light aovs for all lights in it'
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        world_stat = auto_assign_world()
+        emissive_stat = assign_missing_object()
+        infox = "Assigned light groups to "
+        info1 = ""
+        info2 = ""
+        if world_stat is not None:
+            info1 = f"{world_stat} world, "
+        if emissive_stat is not 0:
+            info2 = f"{emissive_stat} object"
+        infof = infox + info1 + info2
+        self.report({"INFO"}, infof)
 
         return {"FINISHED"}
 
@@ -91,6 +113,7 @@ class LAS_PT_oPanel_Base:
         col.operator(LAS_OT_InitAOVSimple.bl_idname, icon="LIGHT")
         col.operator(LAS_OT_InitAOV.bl_idname, icon="OUTLINER_OB_LIGHT")
         layout.label(text="Tools:")
+        layout.operator(LAS_OT_AssignMissing.bl_idname, icon="APPEND_BLEND")
         layout.operator(LAS_OT_CloudMode.bl_idname, icon="SCREEN_BACK")
 
 
@@ -142,6 +165,7 @@ reg_clss = [
     LAS_AddonPrefs,
     LAS_OT_InitAOVSimple,
     LAS_OT_InitAOV,
+    LAS_OT_AssignMissing,
     LAS_PT_oPanel,
     LAS_PT_oPanel_COMP,
     LAS_PT_oPanel_N,
