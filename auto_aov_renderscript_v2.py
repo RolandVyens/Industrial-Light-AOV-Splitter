@@ -30,7 +30,9 @@ def auto_assignlight_scene(dummy):
     LAS_newLight = []
     for key in lightgroup_dict.keys():
         for lightgroup in lightgroup_dict[key]:
-            for lobe in ["diffuse_", "specular_", "transmission_", "volume_"]:
+            for i, lobe in enumerate(["diffuse_", "specular_", "transmission_", "volume_"]):
+                z = 0.002 * i
+                offset_local = Vector((0, 0, z))
                 if lightgroup.startswith(f"{lobe}"):
                     light = lightgroup.removeprefix(f"{lobe}")
                     for light_object_name in light_dict[key]:
@@ -51,6 +53,10 @@ def auto_assignlight_scene(dummy):
                             duplicate.visible_glossy = False
                             duplicate.visible_transmission = False
                             duplicate.visible_volume_scatter = False
+                            offset_world = (
+                                duplicate.matrix_world.to_quaternion() @ offset_local
+                            )
+                            duplicate.location += offset_world
                             LAS_newLight.append(duplicate.name)
                             if lobe == "diffuse_":
                                 duplicate.visible_diffuse = True
