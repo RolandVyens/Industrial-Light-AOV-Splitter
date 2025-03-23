@@ -19,7 +19,18 @@ from .auto_lightgroup import (
     auto_assign_world,
     assign_missing_object,
 )
-from .auto_aov_renderscript import auto_assignlight_scene, auto_restorelight_scene
+from .auto_aov_renderscript_v2 import auto_assignlight_scene, auto_restorelight_scene
+
+"""配置"""
+ 
+bpy.types.Scene.LAS_fixMissingLight = bpy.props.BoolProperty(  # 是否使用修复模式
+    name="Large Scale Mode",
+    description="When turned on, fix missing light due to extreme large scene scale",
+    default=False,
+)
+
+
+"""操作符"""
 
 
 class LAS_AddonPrefs(AddonPreferences):
@@ -104,6 +115,9 @@ class LAS_OT_AssignMissing(bpy.types.Operator):
         return {"FINISHED"}
 
 
+"""面板"""
+
+
 class LAS_PT_oPanel_Base:
 
     def draw(self, context):
@@ -112,6 +126,7 @@ class LAS_PT_oPanel_Base:
         col.scale_y = 3
         col.operator(LAS_OT_InitAOVSimple.bl_idname, icon="LIGHT")
         col.operator(LAS_OT_InitAOV.bl_idname, icon="OUTLINER_OB_LIGHT")
+        layout.prop(context.scene, "LAS_fixMissingLight")
         layout.label(text="Tools:")
         layout.operator(LAS_OT_AssignMissing.bl_idname, icon="APPEND_BLEND")
         layout.operator(LAS_OT_CloudMode.bl_idname, icon="SCREEN_BACK")
