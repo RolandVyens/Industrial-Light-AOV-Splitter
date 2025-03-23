@@ -2,9 +2,9 @@ import nuke
 
 
 def shuffle_and_combine_light_groups():
-    selected_nodes = nuke.selectedNodes("Read")
+    selected_nodes = nuke.selectedNodes()
     if not selected_nodes:
-        nuke.message("Please select a Read node containing the EXR file.")
+        nuke.message("No node selected")
         return
 
     read_node = selected_nodes[0]
