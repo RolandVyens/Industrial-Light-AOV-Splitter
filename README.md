@@ -31,6 +31,15 @@ join our [discord](https://discord.gg/wGzAAQSMce)
 
 ---
 **Update Log:**
+
+2025.3.24: version 0.6.0
+
+- fix some bug
+- add more debug output for render script
+- added button for auto assign light group to emissive objects and world environment
+- added simple light group assign
+- update nuke script, now you can create light group aov tree from any node
+
 2025.1.31: version 0.5.0
 
 1. initial release, with basic functions.
