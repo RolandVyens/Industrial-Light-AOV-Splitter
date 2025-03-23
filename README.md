@@ -5,7 +5,7 @@
 ### Materialized light group auto builder for blender
 ======================
 
-![屏幕截图 2025-01-31 233806](https://github.com/user-attachments/assets/39c8bdc9-a9c3-46f8-bbdf-9fe23bd8cf6a)
+<img width="306" alt="屏幕截图 2025-03-24 002000" src="https://github.com/user-attachments/assets/ced546ac-6e82-4bd8-beea-53676840df0f" />
 
 **插件面板位置：属性面板→视图层**
 
