@@ -97,12 +97,16 @@ def auto_restorelight_scene(dummy):
                 # Unlink from all collections
                 for collection in obj.users_collection:
                     collection.objects.unlink(obj)
+                    print(f"unlinked {obj.name} from collection")
 
                 # Unlink from the scene if it's directly linked
                 if obj and obj.name in objects:
                     objects.unlink(obj)
+                    print(f"unlinked {obj.name} from scene")
 
                 # Safely remove the object
                 bpy.data.objects.remove(obj, do_unlink=True)
+                print(f"deleted {obj.name}")
+
     LAS_originLight = []
     LAS_newLight = []
