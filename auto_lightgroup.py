@@ -163,9 +163,9 @@ def auto_assignlight_scene():
 
 
 def auto_assign_world():
-    stat = None
+    stat = 0
     world = bpy.context.scene.world
-    if world is not None and world.lightgroup is None:
+    if world and not world.lightgroup:
         world.lightgroup = "env"
         stat = 1
     view_layer = bpy.context.view_layer

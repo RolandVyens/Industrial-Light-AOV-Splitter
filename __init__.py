@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Industrial Light AOV Splitter",
     "author": "Roland Vyens",
-    "version": (0, 6, 0),  # bump doc_url as well!
+    "version": (0, 6, 1),  # bump doc_url as well!
     "blender": (3, 6, 0),
     "location": "Viewlayer tab in properties panel.",
     "description": "Auto create better light aovs (diffuse_key, specular_key...)",
@@ -105,7 +105,7 @@ class LAS_OT_CloudMode(bpy.types.Operator):
 class LAS_OT_AssignMissing(bpy.types.Operator):
     bl_idname = "object.assignmissing"
     bl_label = "Auto Assign Emission Objects"
-    bl_description = 'This will look for all enabled collections which name starts with "lgt_" and create splitted light aovs for all lights in it'
+    bl_description = 'Find all emissive objects in the scene as well as the world, assign light groups to them.'
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
@@ -114,7 +114,7 @@ class LAS_OT_AssignMissing(bpy.types.Operator):
         infox = "Assigned light groups to "
         info1 = ""
         info2 = ""
-        if world_stat is not None:
+        if world_stat is not 0:
             info1 = f"{world_stat} world, "
         if emissive_stat is not 0:
             info2 = f"{emissive_stat} object"
