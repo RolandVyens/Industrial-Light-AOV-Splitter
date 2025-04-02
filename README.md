@@ -19,9 +19,9 @@ recommended to use with [Industrial AOV Connector](https://github.com/RolandVyen
 
 目前支持3.6 - 最新版 Supports blender 3.6 - newest by now (2025.01.31)
 
-通过基本无感的方式，自动给符合条件的灯创建灯光组，把灯光分离成diffuse, specular, transmission, volume四个通道(如diffuse_env, specular_env...)，以取得与行业接轨的可控性（合成软件内）。
+通过基本无感的方式，自动给符合条件的灯创建灯光组，把灯光分离成diffuse, specular, transmission, volume四个通道(如diffuse_env, specular_env...)，以取得与行业接轨的可控性（合成软件内）。也可一键给场景内的世界环境和发光物体打上灯光组。
 
-Separate the light groups into four channels: diffuse, specular, transmission, and volume (e.g., diffuse_env, specular_env...) with one click, to achieve industry-standard controllability during the compositing stage.
+Separate the light groups into four channels: diffuse, specular, transmission, and volume (e.g., diffuse_env, specular_env...) with one click, to achieve industry-standard controllability during the compositing stage. Also can automatically give light groups to world and emissive objects.
 
 **有配套的nuke自动shuffle脚本！**
 
