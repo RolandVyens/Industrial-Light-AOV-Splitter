@@ -54,7 +54,8 @@ join our [discord](https://discord.gg/wGzAAQSMce)
 3. **Put your lights in collections whose name starts with "lgt_".**
 4. **Naming your light properly with letters and numbers only. Do not use any "_"**
 5. **Press one of the function button to generate current viewlayer's light group. Note that only enabled collection will count. Now you can assign traditional light group as well.**
-6. **If you want to reuse light group between multiple lights, just duplicate the lights and keep their auto-generated ".001" number suffix, they'll be ignored and revert back to the desired name.**
+6. **Only one light collection can be turned on for each viewlayer.**
+7. **If you want to reuse light group between multiple lights, just duplicate the lights and keep their auto-generated ".001" number suffix, they'll be ignored and revert back to the desired name.**
 6. **To test the generated light groups, you may need to use the test button in viewport shading mode, if nothing goes wrong, you won't see any change in lighting. Remember to restore the operation.**
 7. **To quickly assign emission objects and world environment light group, there is a button to do so.**
 
@@ -67,7 +68,8 @@ join our [discord](https://discord.gg/wGzAAQSMce)
 3. **将你的灯光放入名称以“lgt_”开头的集合中。**
 4. **正确命名你的灯光，仅使用字母和数字。不要使用任何下划线（“_”）。**
 5. **点击其中一个功能按钮为当前视图层生成灯光组。注意只有启用的集合才会被处理。现在你也可以一键生成传统灯光组。**
-6. **如果你想在多个灯光之间重用灯光组，只需复制灯光并保留其自动生成的“.001”编号后缀。它们将被忽略并恢复为所需的名称。**
+6. **一个视图层只能有一个启用的灯光集合。**
+7. **如果你想在多个灯光之间重用灯光组，只需复制灯光并保留其自动生成的“.001”编号后缀。它们将被忽略并恢复为所需的名称。**
 6. **为了测试生成的灯光组，你需要在视窗渲染模式下点击测试按钮，如果没问题的话，灯光效果不会发生任何改变。记得撤回操作。**
 7. **现在有专门的按钮用于一键赋予所有发光物体和世界环境灯光组。**
 
