@@ -200,10 +200,15 @@ def list_objects_with_emissive_material():
                                 objects_with_emissive_material.append(obj.name)
                                 emissive_found = True
                                 break
-                            elif node.type in {"BSDF_PRINCIPLED", "VOLUME_PRINCIPLED"}:
+                            elif node.type == "BSDF_PRINCIPLED":
+                                if node.inputs[28].default_value > 0:
+                                    objects_with_emissive_material.append(obj.name)
+                                    emissive_found = True
+                                    break
+                            elif node.type == "PRINCIPLED_VOLUME":
                                 if (
-                                    node.inputs.get("Emission")
-                                    and node.inputs["Emission"].default_value[0] > 0
+                                    node.inputs[6].default_value > 0
+                                    or node.inputs[8].default_value > 0
                                 ):
                                     objects_with_emissive_material.append(obj.name)
                                     emissive_found = True
