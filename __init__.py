@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Industrial Light AOV Splitter",
     "author": "Roland Vyens",
-    "version": (0, 6, 1),  # bump doc_url as well!
+    "version": (0, 6, 2),  # bump doc_url as well!
     "blender": (3, 6, 0),
     "location": "Viewlayer tab in properties panel.",
     "description": "Auto create better light aovs (diffuse_key, specular_key...)",
