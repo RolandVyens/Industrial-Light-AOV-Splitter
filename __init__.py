@@ -19,7 +19,7 @@ from .auto_lightgroup import (
     auto_assign_world,
     assign_missing_object,
 )
-from .auto_aov_renderscript_v2 import auto_assignlight_scene, auto_restorelight_scene
+
 
 
 """配置"""
@@ -89,17 +89,7 @@ class LAS_OT_InitAOV(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class LAS_OT_CloudMode(bpy.types.Operator):
-    bl_idname = "object.cloudmodelas"
-    bl_label = "Test Light/Renderfarm Prepare"
-    bl_description = "Precreate all lights to see if the newly-created light matches the original ones, best to perform in viewport shading mode. Or send to cloud render farm without installing the plugin"
-    bl_options = {"REGISTER", "UNDO"}
 
-    def execute(self, context):
-        auto_assignlight_scene(bpy.context.scene)
-        self.report({"INFO"}, bpy.app.translations.pgettext("Pre-created All Lights"))
-
-        return {"FINISHED"}
 
 
 class LAS_OT_AssignMissing(bpy.types.Operator):
@@ -138,7 +128,7 @@ class LAS_PT_oPanel_Base:
         layout.prop(context.scene, "LAS_fixMissingLight")
         layout.label(text="Tools:")
         layout.operator(LAS_OT_AssignMissing.bl_idname, icon="APPEND_BLEND")
-        layout.operator(LAS_OT_CloudMode.bl_idname, icon="SCREEN_BACK")
+
 
 
 class LAS_PT_oPanel(bpy.types.Panel, LAS_PT_oPanel_Base):
@@ -193,7 +183,7 @@ reg_clss = [
     LAS_PT_oPanel,
     LAS_PT_oPanel_COMP,
     LAS_PT_oPanel_N,
-    LAS_OT_CloudMode,
+
 ]
 
 
@@ -201,18 +191,14 @@ def register():
     for i in reg_clss:
         bpy.utils.register_class(i)
     # bpy.app.translations.register(__package__, language_dict)
-    bpy.app.handlers.render_init.append(auto_assignlight_scene)
-    bpy.app.handlers.render_cancel.append(auto_restorelight_scene)
-    bpy.app.handlers.render_complete.append(auto_restorelight_scene)
+
 
 
 def unregister():
     for i in reg_clss:
         bpy.utils.unregister_class(i)
     # bpy.app.translations.unregister(__package__)
-    bpy.app.handlers.render_init.remove(auto_assignlight_scene)
-    bpy.app.handlers.render_cancel.remove(auto_restorelight_scene)
-    bpy.app.handlers.render_complete.remove(auto_restorelight_scene)
+
 
 
 if __name__ == "__main__":

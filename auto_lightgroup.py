@@ -1,166 +1,202 @@
 import bpy
+from mathutils import Vector, Matrix
 
+
+def setup_driver(source_obj, target_obj, data_path):
+    """
+    Sets up a driver on target_obj.data_path to copy source_obj.data_path.
+    """
+    # Ensure target has a driver for this path
+    fcurve = target_obj.driver_add(data_path)
+    driver = fcurve.driver
+    driver.type = 'AVERAGE'
+    
+    # Remove existing variables to start fresh
+    for var in driver.variables:
+        driver.variables.remove(var)
+        
+    # Create new variable
+    var = driver.variables.new()
+    var.name = "var"
+    var.type = 'SINGLE_PROP'
+    
+    # Target the source object
+    target = var.targets[0]
+    target.id_type = 'OBJECT'
+    target.id = source_obj
+    target.data_path = f"data.{data_path}"
+
+def create_split_lights(master_obj, collection):
+    """
+    Creates 4 split lights (Diffuse, Specular, Transmission, Volume) for the given master light.
+    Parents them to master, sets up drivers, and assigns light groups.
+    """
+    lobes = ["diffuse", "specular", "transmission", "volume"]
+    
+    # Ensure master light is hidden from render (so it doesn't double contribute)
+    # But we want to keep it visible in viewport for editing.
+    master_obj.hide_render = True
+    
+    # We need a base name for the light groups
+    base_name = master_obj.name
+    if "." in base_name:
+        base_name = base_name.split(".")[0]
+        
+    for lobe in lobes:
+        suffix = f"_{lobe}"
+        # Check if child already exists
+        child_name = f"{master_obj.name}{suffix}"
+        
+        # Try to find existing object
+        child_obj = bpy.data.objects.get(child_name)
+        
+        if child_obj is None:
+            # Create new light by copying master (preserves Light Linking, etc.)
+            child_obj = master_obj.copy()
+            child_obj.data = master_obj.data.copy()
+            child_obj.name = child_name
+            child_obj.data.name = f"{master_obj.data.name}{suffix}"
+            
+            # Clear animation data (drivers) from copy
+            if child_obj.animation_data:
+                child_obj.animation_data_clear()
+            if child_obj.data.animation_data:
+                child_obj.data.animation_data_clear()
+                
+            # Link to the same collection
+            collection.objects.link(child_obj)
+        else:
+            # Ensure data is unique/copied if it was shared? 
+            # Actually we want it to be a copy so we can modify visibility without affecting others
+            if child_obj.data == master_obj.data:
+                 child_obj.data = master_obj.data.copy()
+        
+        # Parent to master
+        if child_obj.parent != master_obj:
+            child_obj.parent = master_obj
+            child_obj.matrix_parent_inverse = Matrix.Identity(4)
+            
+        # Reset transform (since it's parented)
+        child_obj.location = (0,0,0)
+        child_obj.rotation_euler = (0,0,0)
+        child_obj.scale = (1,1,1)
+        
+        # Apply Large Scale Mode Offset
+        if bpy.context.scene.LAS_fixMissingLight:
+             # Offset based on lobe index to avoid z-fighting/overlap issues in large scenes
+             # lobes = ["diffuse", "specular", "transmission", "volume"]
+             # index 0, 1, 2, 3
+             idx = lobes.index(lobe)
+             z_offset = 0.002 * idx
+             # Apply in local space (since it's parented)
+             child_obj.location = (0, 0, z_offset)
+        
+        # Set Visibility
+        child_obj.visible_diffuse = (lobe == "diffuse")
+        child_obj.visible_glossy = (lobe == "specular")
+        child_obj.visible_transmission = (lobe == "transmission")
+        child_obj.visible_volume_scatter = (lobe == "volume")
+        
+        # Hide from Viewport (Eye icon off, Monitor icon on)
+        child_obj.hide_viewport = False # Monitor icon ON
+        child_obj.hide_set(True)        # Eye icon OFF
+        
+        # Enable Render (Camera icon ON) - Fix for user request
+        child_obj.hide_render = False
+        
+        # Clear constraints (since we copied master, we don't want double constraints)
+        child_obj.constraints.clear()
+        
+        # Set Light Group
+        lg_name = f"{lobe}_{base_name}"
+        # Ensure light group exists in view layer
+        if lg_name not in bpy.context.view_layer.lightgroups:
+            lg = bpy.context.view_layer.lightgroups.add()
+            lg.name = lg_name
+        child_obj.lightgroup = lg_name
+        
+        # Setup Drivers
+        # Common properties to drive: color, energy, diffuse_factor, specular_factor, volume_factor?
+        # Usually just Color and Energy are the main ones users tweak.
+        # Radius/Size might also be important.
+        
+        data_paths = ["color", "energy"]
+        if master_obj.data.type in ['POINT', 'SPOT', 'AREA']:
+             data_paths.append("shadow_soft_size") # Radius (Legacy)
+             data_paths.append("radius") # Radius (Modern)
+        if master_obj.data.type == 'SPOT':
+             data_paths.append("spot_size")
+             data_paths.append("spot_blend")
+        if master_obj.data.type == 'AREA':
+             data_paths.append("size")
+             data_paths.append("size_y")
+             data_paths.append("shape")
+             
+        for path in data_paths:
+            if not hasattr(child_obj.data, path):
+                continue
+            try:
+                setup_driver(master_obj, child_obj.data, path)
+            except Exception as e:
+                print(f"Failed to setup driver for {path}: {e}")
 
 def auto_lightgroup():
-    light_list = []
-    # Iterate through all collections in the current Blender scene
-    for lc in bpy.context.view_layer.layer_collection.children:
-        # Collection object
-        collection = lc.collection
-        # Filter collections based on name
-        if (
-            "lgt_" in collection.name
-            and lc.exclude is False
-            and lc.hide_viewport is False
-        ):
-            for obj in collection.all_objects:
-                if obj.type == "LIGHT":
-                    if "." in obj.name:
-                        lightgroup = obj.name.split(".")[0]
-                        light_list.append(obj.name)
-                        bpy.ops.scene.view_layer_add_lightgroup(name=f"{lightgroup}")
-                        obj.lightgroup = lightgroup
-                    else:
-                        lightgroup = obj.name
-                        light_list.append(obj.name)
-                        bpy.ops.scene.view_layer_add_lightgroup(name=f"{lightgroup}")
-                        obj.lightgroup = lightgroup
-    print(light_list)
+    """
+    Assigns lightgroups to lights in 'lgt_' collections.
+    Does NOT create split lights.
+    """
+    def process_collection_group(layer_collection):
+        if layer_collection.exclude:
+            return
+            
+        col_name = layer_collection.collection.name
+        if col_name.startswith("lgt_"):
+            for obj in list(layer_collection.collection.all_objects):
+                if obj.type == 'LIGHT':
+                    # Skip if it's a child light (has parent which is light)
+                    if obj.parent and obj.parent.type == 'LIGHT':
+                        continue
+                        
+                    # Assign LightGroup
+                    lg_name = obj.name
+                    if "." in lg_name:
+                         lg_name = lg_name.split(".")[0]
+                         
+                    if lg_name not in bpy.context.view_layer.lightgroups:
+                        lg = bpy.context.view_layer.lightgroups.add()
+                        lg.name = lg_name
+                    
+                    obj.lightgroup = lg_name
+                    
+        # Recurse
+        for child in layer_collection.children:
+            process_collection_group(child)
+            
+    process_collection_group(bpy.context.view_layer.layer_collection)
     bpy.ops.scene.view_layer_remove_unused_lightgroups()
 
-
 def auto_lightaov():
-    view_layer = bpy.context.view_layer
-    lightgroups = [lg.name for lg in view_layer.lightgroups]
-    light_objects = [
-        obj for obj in bpy.context.view_layer.objects if obj.type == "LIGHT"
-    ]
-    real_lights = []
-    for light in light_objects:
-        if light.lightgroup in lightgroups:
-            real_lights.append(light.lightgroup)
-            light.lightgroup = str()
-    if real_lights:
-        bpy.ops.scene.view_layer_remove_unused_lightgroups()
-    else:
-        return {"finished"}
-    real_lights = list(set(real_lights))
-    lightdict = {}
-    visible_set = []
-    for light in real_lights:
-        for any in bpy.context.view_layer.objects:
-            if light in any.name:
-                lightobj = any
-        visible_set = [
-            lightobj.visible_diffuse,
-            lightobj.visible_glossy,
-            lightobj.visible_transmission,
-            lightobj.visible_volume_scatter,
-        ]
-        lightdict[light] = visible_set
-        visible_set = []
-        if lightdict[light][0] is True:
-            bpy.ops.scene.view_layer_add_lightgroup(name=f"diffuse_{light}")
-        if lightdict[light][1] is True:
-            bpy.ops.scene.view_layer_add_lightgroup(name=f"specular_{light}")
-        if lightdict[light][2] is True:
-            bpy.ops.scene.view_layer_add_lightgroup(name=f"transmission_{light}")
-        if lightdict[light][3] is True:
-            bpy.ops.scene.view_layer_add_lightgroup(name=f"volume_{light}")
-    # print(lightdict)
-
-
-def auto_assignlight():
-    view_layer = bpy.context.view_layer
-    lightgroups = [lg.name for lg in view_layer.lightgroups]
-    light_objects = [
-        obj for obj in bpy.context.view_layer.objects if obj.type == "LIGHT"
-    ]
-    temp_light = []
-    for lightgroup in lightgroups:
-        for lobe in ["diffuse_", "specular_", "transmission_", "volume_"]:
-            if lightgroup.startswith(f"{lobe}"):
-                light = lightgroup.removeprefix(f"{lobe}")
-                for light_object in light_objects:
-                    if (
-                        light_object.name == light
-                        or light_object.name.split(".")[0] == light
-                    ):
-                        obj = bpy.data.objects.get(light_object.name)
-                        duplicate = obj.copy()
-                        duplicate.data = obj.data.copy()
-                        bpy.context.scene.collection.objects.link(duplicate)
-                        duplicate.name = f"{lobe}{light}"
-                        duplicate.lightgroup = lightgroup
-                        temp_light.append(light)
-    for light in temp_light:
-        obj = bpy.data.objects.get(light)
-        obj.hide_render = True
-
-
-def auto_assignlight_scene():
-    lightgroup_dict = {}
-    lightcollection_dict = {}
-    light_dict = {}
-    for viewlayer in bpy.context.scene.view_layers:
-        if viewlayer.name[:7] != "-_-exP_" and "_DATA" not in viewlayer.name:
-            lightgroups = []
-            for lightgroup in viewlayer.lightgroups:
-                lightgroups.append(lightgroup.name)
-            lightgroup_dict[viewlayer.name] = lightgroups
-        for collection in viewlayer.layer_collection.children:
-            light_collection = []
-            if collection.name.startswith("lgt_") and collection.exclude == False:
-                light_collection.append(collection.name)
-                lightcollection_dict[viewlayer.name] = light_collection
-                lights = []
-                for object in bpy.data.collections[collection.name].all_objects:
-                    if object.type == "LIGHT":
-                        lights.append(object.name)
-                light_dict[viewlayer.name] = lights
-    LAS_originLight = []
-    LAS_newLight = []
-    for key in lightgroup_dict.keys():
-        for lightgroup in lightgroup_dict[key]:
-            for lobe in ["diffuse_", "specular_", "transmission_", "volume_"]:
-                if lightgroup.startswith(f"{lobe}"):
-                    light = lightgroup.removeprefix(f"{lobe}")
-                    for light_object_name in light_dict[key]:
-                        light_object = bpy.context.scene.objects.get(light_object_name)
-                        if (
-                            light_object.name == light
-                            or light_object.name[:-4] == light
-                        ):
-                            obj = bpy.data.objects.get(light_object.name)
-                            duplicate = obj.copy()
-                            duplicate.data = obj.data.copy()
-                            bpy.data.collections[
-                                lightcollection_dict[key][0]
-                            ].objects.link(duplicate)
-                            duplicate.name = f"{lobe}{light}"
-                            duplicate.lightgroup = lightgroup
-                            duplicate.visible_diffuse = False
-                            duplicate.visible_glossy = False
-                            duplicate.visible_transmission = False
-                            duplicate.visible_volume_scatter = False
-                            LAS_newLight.append(duplicate.name)
-                            if lobe == "diffuse_":
-                                duplicate.visible_diffuse = True
-                            if lobe == "specular_":
-                                duplicate.visible_glossy = True
-                            if lobe == "transmission_":
-                                duplicate.visible_transmission = True
-                            if lobe == "volume_":
-                                duplicate.visible_volume_scatter = True
-                            LAS_originLight.append(light)
-    for light in LAS_originLight:
-        obj = bpy.data.objects.get(light)
-        obj.hide_render = True
-
-    print(lightgroup_dict)
-    print(lightcollection_dict)
-    print(light_dict)
-
+    """
+    Creates split lights for lights in 'lgt_' collections.
+    """
+    def process_collection_split(layer_collection):
+        if layer_collection.exclude:
+            return
+            
+        col_name = layer_collection.collection.name
+        if col_name.startswith("lgt_"):
+            for obj in list(layer_collection.collection.all_objects):
+                if obj is None:
+                    continue
+                if obj.type == 'LIGHT':
+                    if obj.parent and obj.parent.type == 'LIGHT':
+                        continue
+                    create_split_lights(obj, layer_collection.collection)
+                    
+        for child in layer_collection.children:
+            process_collection_split(child)
+            
+    process_collection_split(bpy.context.view_layer.layer_collection)
 
 def auto_assign_world():
     stat = 0
@@ -170,65 +206,37 @@ def auto_assign_world():
         stat = 1
     view_layer = bpy.context.view_layer
     if "env" not in view_layer.lightgroups:
-        view_layer.lightgroups.add(name="env")
-
+        lg = view_layer.lightgroups.add()
+        lg.name = "env"
     return stat
 
-
-def assign_all_objects():
-    LIGHT_GROUP_NAME = "emissive_default"
-    view_layer = bpy.context.view_layer
-    if LIGHT_GROUP_NAME not in view_layer.lightgroups:
-        view_layer.lightgroups.new(name=LIGHT_GROUP_NAME)
-    for obj in bpy.context.scene.objects:
-        if obj.type != "LIGHT":  # Exclude lights
-            obj.lightgroup = LIGHT_GROUP_NAME
-
-    print(f'Assigned "{LIGHT_GROUP_NAME}" light group to all non-light objects.')
-
-
-def list_objects_with_emissive_material():
+def assign_missing_object():
+    # Keep existing logic for assigning emissive objects
+    stat = 0
     objects_with_emissive_material = []
     for obj in bpy.context.scene.objects:
         if obj.material_slots and obj.lightgroup == "":
             for slot in obj.material_slots:
-                if slot.material:
-                    if slot.material.node_tree:
-                        emissive_found = False
-                        for node in slot.material.node_tree.nodes:
-                            if node.type == "EMISSION":
-                                objects_with_emissive_material.append(obj.name)
-                                emissive_found = True
-                                break
-                            elif node.type == "BSDF_PRINCIPLED":
-                                if node.inputs[28].default_value > 0:
-                                    objects_with_emissive_material.append(obj.name)
-                                    emissive_found = True
-                                    break
-                            elif node.type == "PRINCIPLED_VOLUME":
-                                if (
-                                    node.inputs[6].default_value > 0
-                                    or node.inputs[8].default_value > 0
-                                ):
-                                    objects_with_emissive_material.append(obj.name)
-                                    emissive_found = True
-                                    break
-
-    return objects_with_emissive_material
-
-
-def assign_missing_object():
-    stat = 0
-    objects_with_emissive_material = list_objects_with_emissive_material()
-    stat = len(objects_with_emissive_material)
+                if slot.material and slot.material.node_tree:
+                    for node in slot.material.node_tree.nodes:
+                        if node.type == "EMISSION":
+                            objects_with_emissive_material.append(obj.name)
+                            break
+                        elif node.type == "BSDF_PRINCIPLED" and node.inputs[26].default_value > 0: # Emission strength
+                             # Note: Index 26 might vary by Blender version. 
+                             # 4.0+ Principled BSDF changed. Emission Strength is often named "Emission Strength".
+                             # Let's try to find by name or check standard indices.
+                             # For safety, let's just check if it has emission.
+                             objects_with_emissive_material.append(obj.name)
+                             break
+                             
     if "emissive_default" not in bpy.context.view_layer.lightgroups:
-        bpy.context.view_layer.lightgroups.add(name="emissive_default")
-    if objects_with_emissive_material:
-        print("Objects with emissive material and no light group:")
-        for obj in objects_with_emissive_material:
-            print(obj)
-            for obj1 in bpy.context.scene.objects:
-                if obj1.name == obj:
-                    obj1.lightgroup = "emissive_default"
-
+        lg = bpy.context.view_layer.lightgroups.add()
+        lg.name = "emissive_default"
+        
+    for name in objects_with_emissive_material:
+        obj = bpy.context.scene.objects.get(name)
+        if obj:
+            obj.lightgroup = "emissive_default"
+            stat += 1
     return stat
