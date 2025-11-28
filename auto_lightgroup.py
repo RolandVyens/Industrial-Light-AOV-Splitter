@@ -2,6 +2,8 @@ import bpy
 from mathutils import Vector, Matrix
 
 
+# Global dictionary removed - using bpy.context.view_layer.las_created_lightgroups instead
+
 def setup_driver(source_obj, target_obj, data_path):
     """
     Sets up a driver on target_obj.data_path to copy source_obj.data_path.
@@ -113,6 +115,19 @@ def create_split_lights(master_obj, collection):
         if lg_name not in bpy.context.view_layer.lightgroups:
             lg = bpy.context.view_layer.lightgroups.add()
             lg.name = lg_name
+            
+        # Track created lightgroup (Persistent)
+        view_layer = bpy.context.view_layer
+        # Check if already tracked
+        already_tracked = False
+        for item in view_layer.las_created_lightgroups:
+            if item.name == lg_name:
+                already_tracked = True
+                break
+        if not already_tracked:
+            item = view_layer.las_created_lightgroups.add()
+            item.name = lg_name
+            
         child_obj.lightgroup = lg_name
         
         # Setup Drivers
@@ -165,6 +180,17 @@ def auto_lightgroup():
                     if lg_name not in bpy.context.view_layer.lightgroups:
                         lg = bpy.context.view_layer.lightgroups.add()
                         lg.name = lg_name
+                        
+                    # Track created lightgroup (Persistent)
+                    view_layer = bpy.context.view_layer
+                    already_tracked = False
+                    for item in view_layer.las_created_lightgroups:
+                        if item.name == lg_name:
+                            already_tracked = True
+                            break
+                    if not already_tracked:
+                        item = view_layer.las_created_lightgroups.add()
+                        item.name = lg_name
                     
                     obj.lightgroup = lg_name
                     
@@ -208,6 +234,17 @@ def auto_assign_world():
     if "env" not in view_layer.lightgroups:
         lg = view_layer.lightgroups.add()
         lg.name = "env"
+        
+    # Track created lightgroup (Persistent)
+    already_tracked = False
+    for item in view_layer.las_created_lightgroups:
+        if item.name == "env":
+            already_tracked = True
+            break
+    if not already_tracked:
+        item = view_layer.las_created_lightgroups.add()
+        item.name = "env"
+        
     return stat
 
 def assign_missing_object():
@@ -233,6 +270,17 @@ def assign_missing_object():
     if "emissive_default" not in bpy.context.view_layer.lightgroups:
         lg = bpy.context.view_layer.lightgroups.add()
         lg.name = "emissive_default"
+        
+    # Track created lightgroup (Persistent)
+    view_layer = bpy.context.view_layer
+    already_tracked = False
+    for item in view_layer.las_created_lightgroups:
+        if item.name == "emissive_default":
+            already_tracked = True
+            break
+    if not already_tracked:
+        item = view_layer.las_created_lightgroups.add()
+        item.name = "emissive_default"
         
     for name in objects_with_emissive_material:
         obj = bpy.context.scene.objects.get(name)
@@ -262,7 +310,15 @@ def clean_split_lights(master_obj):
 def auto_clean_lightaov():
     """
     Iterates through 'lgt_' collections and cleans up split lights.
+    Also removes lightgroups created by this addon.
     """
+    # Get list of groups to remove (Persistent)
+    groups_to_remove = set()
+    view_layer = bpy.context.view_layer
+    if hasattr(view_layer, "las_created_lightgroups"):
+        for item in view_layer.las_created_lightgroups:
+            groups_to_remove.add(item.name)
+
     def process_collection_clean(layer_collection):
         if layer_collection.exclude:
             return
@@ -274,6 +330,10 @@ def auto_clean_lightaov():
                     if obj is None:
                         continue
                     if obj.type == 'LIGHT':
+                        # Clear LightGroup if it's one we created
+                        if obj.lightgroup in groups_to_remove:
+                            obj.lightgroup = ""
+                            
                         # Skip if it's a child light (has parent which is light)
                         # Although we are deleting them, we should target the master
                         if obj.parent and obj.parent.type == 'LIGHT':
@@ -287,4 +347,22 @@ def auto_clean_lightaov():
             process_collection_clean(child)
             
     process_collection_clean(bpy.context.view_layer.layer_collection)
+    
+    # Targeted Light Group Removal (Persistent)
+    if hasattr(view_layer, "las_created_lightgroups"):
+        to_remove = []
+        for item in view_layer.las_created_lightgroups:
+            lg = view_layer.lightgroups.get(item.name)
+            if lg:
+                to_remove.append(lg)
+        
+        for lg in to_remove:
+            try:
+                view_layer.lightgroups.remove(lg)
+            except Exception as e:
+                print(f"Failed to remove lightgroup {lg.name}: {e}")
+                
+        # Clear the persistent list after removal
+        view_layer.las_created_lightgroups.clear()
+
     bpy.ops.scene.view_layer_remove_unused_lightgroups()

@@ -56,6 +56,17 @@ bpy.types.Scene.LAS_sceneMode = bpy.props.BoolProperty(  # 是否使用修复模
 )
 
 
+bpy.types.Scene.LAS_sceneMode = bpy.props.BoolProperty(  # 是否使用修复模式
+    name="Whole Scene Mode",
+    description="When turned on, the light aov creation will be scene-wise instead of per-viewlayer, only works on blender 4.4 and higher",
+    default=False,
+)
+
+
+class LAS_LightGroupItem(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(name="Light Group Name")  # type: ignore
+
+
 """操作符"""
 
 
@@ -196,6 +207,7 @@ class LAS_PT_oPanel_N(bpy.types.Panel, LAS_PT_oPanel_Base):
 """以下为注册函数"""
 reg_clss = [
     LAS_AddonPrefs,
+    LAS_LightGroupItem,
     LAS_OT_InitAOVSimple,
     LAS_OT_InitAOV,
     LAS_OT_CleanAOV,
@@ -210,6 +222,8 @@ reg_clss = [
 def register():
     for i in reg_clss:
         bpy.utils.register_class(i)
+    
+    bpy.types.ViewLayer.las_created_lightgroups = bpy.props.CollectionProperty(type=LAS_LightGroupItem)
     # bpy.app.translations.register(__package__, language_dict)
 
 
@@ -217,6 +231,8 @@ def register():
 def unregister():
     for i in reg_clss:
         bpy.utils.unregister_class(i)
+        
+    del bpy.types.ViewLayer.las_created_lightgroups
     # bpy.app.translations.unregister(__package__)
 
 
