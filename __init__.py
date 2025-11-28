@@ -56,11 +56,6 @@ bpy.types.Scene.LAS_sceneMode = bpy.props.BoolProperty(  # 是否使用修复模
 )
 
 
-bpy.types.Scene.LAS_sceneMode = bpy.props.BoolProperty(  # 是否使用修复模式
-    name="Whole Scene Mode",
-    description="When turned on, the light aov creation will be scene-wise instead of per-viewlayer, only works on blender 4.4 and higher",
-    default=False,
-)
 
 
 class LAS_LightGroupItem(bpy.types.PropertyGroup):
