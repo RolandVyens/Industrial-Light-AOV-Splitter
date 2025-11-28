@@ -287,3 +287,4 @@ def auto_clean_lightaov():
             process_collection_clean(child)
             
     process_collection_clean(bpy.context.view_layer.layer_collection)
+    bpy.ops.scene.view_layer_remove_unused_lightgroups()
