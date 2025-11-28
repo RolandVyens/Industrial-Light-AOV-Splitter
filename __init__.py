@@ -18,6 +18,7 @@ from .auto_lightgroup import (
     auto_lightaov,
     auto_assign_world,
     assign_missing_object,
+    auto_clean_lightaov,
 )
 
 
@@ -111,6 +112,23 @@ class LAS_OT_AssignMissing(bpy.types.Operator):
         infof = infox + info1 + info2
         self.report({"INFO"}, infof)
 
+        self.report({"INFO"}, infof)
+
+        return {"FINISHED"}
+
+
+class LAS_OT_CleanAOV(bpy.types.Operator):
+    bl_idname = "object.cleanlightaov"
+    bl_label = "Restore / Clean AOVs"
+    bl_description = 'Removes all split lights and restores master lights to renderable state.'
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        auto_clean_lightaov()
+        self.report(
+            {"INFO"}, bpy.app.translations.pgettext("Restored Original Lights")
+        )
+
         return {"FINISHED"}
 
 
@@ -125,6 +143,7 @@ class LAS_PT_oPanel_Base:
         col.scale_y = 3
         col.operator(LAS_OT_InitAOVSimple.bl_idname, icon="LIGHT")
         col.operator(LAS_OT_InitAOV.bl_idname, icon="OUTLINER_OB_LIGHT")
+        col.operator(LAS_OT_CleanAOV.bl_idname, icon="TRASH")
         layout.prop(context.scene, "LAS_fixMissingLight")
         layout.label(text="Tools:")
         layout.operator(LAS_OT_AssignMissing.bl_idname, icon="APPEND_BLEND")
@@ -179,6 +198,7 @@ reg_clss = [
     LAS_AddonPrefs,
     LAS_OT_InitAOVSimple,
     LAS_OT_InitAOV,
+    LAS_OT_CleanAOV,
     LAS_OT_AssignMissing,
     LAS_PT_oPanel,
     LAS_PT_oPanel_COMP,

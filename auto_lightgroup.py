@@ -240,3 +240,50 @@ def assign_missing_object():
             obj.lightgroup = "emissive_default"
             stat += 1
     return stat
+
+def clean_split_lights(master_obj):
+    """
+    Removes split lights associated with the master light and restores master light visibility.
+    """
+    lobes = ["diffuse", "specular", "transmission", "volume"]
+    
+    # Restore Master Light Visibility
+    master_obj.hide_render = False
+    
+    for lobe in lobes:
+        suffix = f"_{lobe}"
+        child_name = f"{master_obj.name}{suffix}"
+        
+        child_obj = bpy.data.objects.get(child_name)
+        if child_obj:
+            # Remove from scene
+            bpy.data.objects.remove(child_obj, do_unlink=True)
+
+def auto_clean_lightaov():
+    """
+    Iterates through 'lgt_' collections and cleans up split lights.
+    """
+    def process_collection_clean(layer_collection):
+        if layer_collection.exclude:
+            return
+            
+        col_name = layer_collection.collection.name
+        if col_name.startswith("lgt_"):
+            for obj in list(layer_collection.collection.all_objects):
+                try:
+                    if obj is None:
+                        continue
+                    if obj.type == 'LIGHT':
+                        # Skip if it's a child light (has parent which is light)
+                        # Although we are deleting them, we should target the master
+                        if obj.parent and obj.parent.type == 'LIGHT':
+                            continue
+                        clean_split_lights(obj)
+                except ReferenceError:
+                    # Object might have been removed in a previous iteration (e.g. it was a split light of a processed master)
+                    continue
+                    
+        for child in layer_collection.children:
+            process_collection_clean(child)
+            
+    process_collection_clean(bpy.context.view_layer.layer_collection)
