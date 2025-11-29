@@ -100,7 +100,6 @@ def create_split_lights(master_obj, collection):
         child_obj.visible_volume_scatter = (lobe == "volume")
         
         # Hide from Viewport (Eye icon off, Monitor icon on)
-        child_obj.hide_viewport = False # Monitor icon ON
         child_obj.hide_set(True)        # Eye icon OFF
         
         # Enable Render (Camera icon ON) - Fix for user request
@@ -454,8 +453,6 @@ def toggle_test_mode():
             if obj is None:
                 continue
             try:
-                if hasattr(obj, "hide_viewport"):
-                    obj.hide_viewport = item.hide_viewport
                 # hide_get/hide_set manage the "eye" override state in the viewport
                 if hasattr(obj, "hide_set"):
                     obj.hide_set(item.hide_eye)
@@ -488,17 +485,11 @@ def toggle_test_mode():
                 # backup master
                 item = view_layer.las_test_backup.add()
                 item.name = obj.name
-                item.hide_viewport = getattr(obj, "hide_viewport", False)
                 item.hide_eye = obj.hide_get() if hasattr(obj, "hide_get") else False
 
                 # hide the master in viewport
-                try:
-                    if hasattr(obj, "hide_set"):
-                        obj.hide_set(True)
-                    if hasattr(obj, "hide_viewport"):
-                        obj.hide_viewport = True
-                except Exception:
-                    pass
+                if hasattr(obj, "hide_set"):
+                    obj.hide_set(True)
 
                 # find children and make them visible
                 for lobe in lobes:
@@ -507,16 +498,10 @@ def toggle_test_mode():
                         continue
                     child_item = view_layer.las_test_backup.add()
                     child_item.name = child.name
-                    child_item.hide_viewport = getattr(child, "hide_viewport", False)
                     child_item.hide_eye = child.hide_get() if hasattr(child, "hide_get") else False
 
-                    try:
-                        if hasattr(child, "hide_set"):
-                            child.hide_set(False)
-                        if hasattr(child, "hide_viewport"):
-                            child.hide_viewport = False
-                    except Exception:
-                        pass
+                    if hasattr(child, "hide_set"):
+                        child.hide_set(False)
 
         for child in layer_collection.children:
             process(child)
