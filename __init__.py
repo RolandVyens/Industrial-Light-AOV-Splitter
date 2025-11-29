@@ -19,6 +19,7 @@ from .auto_lightgroup import (
     auto_assign_world,
     assign_missing_object,
     auto_clean_lightaov,
+    toggle_test_mode,
 )
 
 
@@ -60,6 +61,13 @@ bpy.types.Scene.LAS_sceneMode = bpy.props.BoolProperty(  # 是否使用修复模
 
 class LAS_LightGroupItem(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Light Group Name")  # type: ignore
+
+
+class LAS_TestItem(bpy.types.PropertyGroup):
+    """Store visibility backup for test mode restore."""
+    name: bpy.props.StringProperty(name="Object Name")  # type: ignore
+    hide_viewport: bpy.props.BoolProperty(default=False)  # type: ignore
+    hide_eye: bpy.props.BoolProperty(default=False)  # type: ignore
 
 
 """操作符"""
@@ -138,6 +146,25 @@ class LAS_OT_CleanAOV(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class LAS_OT_TestToggle(bpy.types.Operator):
+    bl_idname = "object.testtoggle"
+    bl_label = "Test Split Lights"
+    bl_description = 'Toggle "test" mode: hide master lights and show split children, then restore'
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        ok = toggle_test_mode()
+        if not ok:
+            self.report({"WARNING"}, "Test toggle unavailable: ensure addon is enabled or reload the addon (registration missing).")
+        else:
+            # convey simple status
+            if context.view_layer.LAS_test_active:
+                self.report({"INFO"}, "Entered Test Mode")
+            else:
+                self.report({"INFO"}, "Restored from Test Mode")
+        return {"FINISHED"}
+
+
 """面板"""
 
 
@@ -149,6 +176,12 @@ class LAS_PT_oPanel_Base:
         col.scale_y = 3
         col.operator(LAS_OT_InitAOVSimple.bl_idname, icon="LIGHT")
         col.operator(LAS_OT_InitAOV.bl_idname, icon="OUTLINER_OB_LIGHT")
+        # Toggle test mode / restore
+        _active = getattr(context.view_layer, "LAS_test_active", False)
+        if _active:
+            col.operator(LAS_OT_TestToggle.bl_idname, icon="HIDE_OFF", text="Restore Test")
+        else:
+            col.operator(LAS_OT_TestToggle.bl_idname, icon="HIDE_ON", text="Test Split Lights")
         col.operator(LAS_OT_CleanAOV.bl_idname, icon="TRASH")
         layout.prop(context.scene, "LAS_fixMissingLight")
         layout.label(text="Tools:")
@@ -203,10 +236,12 @@ class LAS_PT_oPanel_N(bpy.types.Panel, LAS_PT_oPanel_Base):
 reg_clss = [
     LAS_AddonPrefs,
     LAS_LightGroupItem,
+    LAS_TestItem,
     LAS_OT_InitAOVSimple,
     LAS_OT_InitAOV,
     LAS_OT_CleanAOV,
     LAS_OT_AssignMissing,
+    LAS_OT_TestToggle,
     LAS_PT_oPanel,
     LAS_PT_oPanel_COMP,
     LAS_PT_oPanel_N,
@@ -219,6 +254,9 @@ def register():
         bpy.utils.register_class(i)
     
     bpy.types.ViewLayer.las_created_lightgroups = bpy.props.CollectionProperty(type=LAS_LightGroupItem)
+    # Test backup list and active flag for the Test AOV feature
+    bpy.types.ViewLayer.las_test_backup = bpy.props.CollectionProperty(type=LAS_TestItem)
+    bpy.types.ViewLayer.LAS_test_active = bpy.props.BoolProperty(default=False)
     # bpy.app.translations.register(__package__, language_dict)
 
 
@@ -228,6 +266,15 @@ def unregister():
         bpy.utils.unregister_class(i)
         
     del bpy.types.ViewLayer.las_created_lightgroups
+    # remove our added test properties
+    try:
+        del bpy.types.ViewLayer.las_test_backup
+    except Exception:
+        pass
+    try:
+        del bpy.types.ViewLayer.LAS_test_active
+    except Exception:
+        pass
     # bpy.app.translations.unregister(__package__)
 
 

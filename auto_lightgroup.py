@@ -199,7 +199,34 @@ def auto_lightgroup():
             process_collection_group(child)
             
     process_collection_group(bpy.context.view_layer.layer_collection)
-    bpy.ops.scene.view_layer_remove_unused_lightgroups()
+    # Try to remove unused lightgroups without relying on a UI/context operator
+    try:
+        # If Blender's operator is available in context, prefer it (backward compatibility)
+        bpy.ops.scene.view_layer_remove_unused_lightgroups()
+    except Exception:
+        # Fallback: remove lightgroups that have no users in this view layer
+        view_layer = bpy.context.view_layer
+        unused = []
+        for lg in list(view_layer.lightgroups):
+            used = False
+            # Check objects
+            for obj in bpy.context.scene.objects:
+                if getattr(obj, "lightgroup", "") == lg.name:
+                    used = True
+                    break
+            # Check world
+            if getattr(bpy.context.scene, "world", None) and getattr(bpy.context.scene.world, "lightgroup", "") == lg.name:
+                used = True
+
+            if not used:
+                unused.append(lg)
+
+        for lg in unused:
+            try:
+                view_layer.lightgroups.remove(lg)
+            except Exception:
+                # ignore removal failures
+                pass
 
 def auto_lightaov():
     """
@@ -365,4 +392,136 @@ def auto_clean_lightaov():
         # Clear the persistent list after removal
         view_layer.las_created_lightgroups.clear()
 
-    bpy.ops.scene.view_layer_remove_unused_lightgroups()
+    # Try to remove unused lightgroups without relying strictly on context-sensitive operator
+    try:
+        bpy.ops.scene.view_layer_remove_unused_lightgroups()
+    except Exception:
+        view_layer = bpy.context.view_layer
+        unused = []
+        for lg in list(view_layer.lightgroups):
+            used = False
+            for obj in bpy.context.scene.objects:
+                if getattr(obj, "lightgroup", "") == lg.name:
+                    used = True
+                    break
+            if getattr(bpy.context.scene, "world", None) and getattr(bpy.context.scene.world, "lightgroup", "") == lg.name:
+                used = True
+
+            if not used:
+                unused.append(lg)
+
+        for lg in unused:
+            try:
+                view_layer.lightgroups.remove(lg)
+            except Exception:
+                pass
+
+# --- Test/restore helpers -------------------------------------------------
+def toggle_test_mode():
+    """
+    Toggle a 'test' viewport state for all lights in collections that start with 'lgt_'.
+
+    When entering test mode: master lights are hidden in viewport (eye off) and their
+    split children (named with _diffuse/_specular/_transmission/_volume suffixes) are
+    made visible. The previous state for affected objects is stored in
+    view_layer.las_test_backup so we can restore later.
+
+    When exiting test mode: restores previous hide/visibility states and clears the
+    backup.
+    """
+    view_layer = bpy.context.view_layer
+
+    # Ensure backup property exists. If it's not registered on the ViewLayer, try
+    # to create it dynamically (only possible if the PropertyGroup type has been
+    # registered on bpy.types as LAS_TestItem). This helps when the addon was
+    # reloaded and properties weren't present for some reason.
+    if not hasattr(view_layer, "las_test_backup"):
+        if hasattr(bpy.types, "LAS_TestItem"):
+            try:
+                bpy.types.ViewLayer.las_test_backup = bpy.props.CollectionProperty(type=bpy.types.LAS_TestItem)
+                bpy.types.ViewLayer.LAS_test_active = bpy.props.BoolProperty(default=False)
+            except Exception:
+                return False
+        else:
+            return False
+
+    active = getattr(view_layer, "LAS_test_active", False)
+
+    if active:
+        # restore
+        for item in list(view_layer.las_test_backup):
+            obj = bpy.data.objects.get(item.name)
+            if obj is None:
+                continue
+            try:
+                if hasattr(obj, "hide_viewport"):
+                    obj.hide_viewport = item.hide_viewport
+                # hide_get/hide_set manage the "eye" override state in the viewport
+                if hasattr(obj, "hide_set"):
+                    obj.hide_set(item.hide_eye)
+            except Exception:
+                # ignore problematic restores
+                pass
+
+        view_layer.las_test_backup.clear()
+        view_layer.LAS_test_active = False
+        return True
+
+    # Enter test mode: store state and apply changes
+    view_layer.las_test_backup.clear()
+    lobes = ["diffuse", "specular", "transmission", "volume"]
+
+    def process(layer_collection):
+        if layer_collection.exclude:
+            return
+
+        col_name = layer_collection.collection.name
+        if col_name.startswith("lgt_"):
+            for obj in list(layer_collection.collection.all_objects):
+                if obj is None or obj.type != 'LIGHT':
+                    continue
+
+                # skip child lights
+                if obj.parent and obj.parent.type == 'LIGHT':
+                    continue
+
+                # backup master
+                item = view_layer.las_test_backup.add()
+                item.name = obj.name
+                item.hide_viewport = getattr(obj, "hide_viewport", False)
+                item.hide_eye = obj.hide_get() if hasattr(obj, "hide_get") else False
+
+                # hide the master in viewport
+                try:
+                    if hasattr(obj, "hide_set"):
+                        obj.hide_set(True)
+                    if hasattr(obj, "hide_viewport"):
+                        obj.hide_viewport = True
+                except Exception:
+                    pass
+
+                # find children and make them visible
+                for lobe in lobes:
+                    child = bpy.data.objects.get(f"{obj.name}_{lobe}")
+                    if not child:
+                        continue
+                    child_item = view_layer.las_test_backup.add()
+                    child_item.name = child.name
+                    child_item.hide_viewport = getattr(child, "hide_viewport", False)
+                    child_item.hide_eye = child.hide_get() if hasattr(child, "hide_get") else False
+
+                    try:
+                        if hasattr(child, "hide_set"):
+                            child.hide_set(False)
+                        if hasattr(child, "hide_viewport"):
+                            child.hide_viewport = False
+                    except Exception:
+                        pass
+
+        for child in layer_collection.children:
+            process(child)
+
+    process(bpy.context.view_layer.layer_collection)
+
+    view_layer.LAS_test_active = True
+    return True
