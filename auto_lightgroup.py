@@ -7,26 +7,73 @@ from mathutils import Vector, Matrix
 def setup_driver(source_obj, target_obj, data_path):
     """
     Sets up a driver on target_obj.data_path to copy source_obj.data_path.
+    Handles both single values and array properties (like color).
     """
-    # Ensure target has a driver for this path
-    fcurve = target_obj.driver_add(data_path)
-    driver = fcurve.driver
-    driver.type = 'AVERAGE'
-    
-    # Remove existing variables to start fresh
-    for var in driver.variables:
-        driver.variables.remove(var)
+    try:
+        # driver_add returns a single FCurve or a list of FCurves (for arrays)
+        fcurves = target_obj.driver_add(data_path)
+    except TypeError:
+        # Property not animatable
+        print(f"Property {data_path} is not animatable.")
+        return
+    except Exception as e:
+        print(f"Error adding driver for {data_path}: {e}")
+        return
+
+    # Normalize to list
+    if not isinstance(fcurves, list):
+        fcurves = [fcurves]
         
-    # Create new variable
-    var = driver.variables.new()
-    var.name = "var"
-    var.type = 'SINGLE_PROP'
-    
-    # Target the source object
-    target = var.targets[0]
-    target.id_type = 'OBJECT'
-    target.id = source_obj
-    target.data_path = f"data.{data_path}"
+    for fcurve in fcurves:
+        driver = fcurve.driver
+        driver.type = 'AVERAGE'
+        
+        # Remove existing variables to start fresh
+        for var in driver.variables:
+            driver.variables.remove(var)
+            
+        # Create new variable
+        var = driver.variables.new()
+        var.name = "var"
+        var.type = 'SINGLE_PROP'
+        
+        # Target the source object
+        target = var.targets[0]
+        target.id_type = 'OBJECT'
+        target.id = source_obj
+        
+        # Construct data path with index if applicable
+        if fcurve.array_index >= 0:
+             target.data_path = f"data.{data_path}[{fcurve.array_index}]"
+        else:
+             target.data_path = f"data.{data_path}"
+
+# Comprehensive list of properties to drive for each light type
+LIGHT_PROPERTIES = {
+    'POINT': [
+        'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
+        'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start', 
+        'use_custom_distance', 'cutoff_distance', 'use_soft_falloff'
+    ],
+    'SPOT': [
+        'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
+        'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start',
+        'use_custom_distance', 'cutoff_distance', 'use_soft_falloff',
+        'spot_size', 'spot_blend', 'show_cone', 'use_square'
+    ],
+    'AREA': [
+        'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
+        'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start',
+        'use_custom_distance', 'cutoff_distance',
+        'shape', 'size', 'size_y', 'spread'
+    ],
+    'SUN': [
+        'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
+        'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start',
+        'angle', 
+        'shadow_cascade_max_distance', 'shadow_cascade_count', 'shadow_cascade_exponent', 'shadow_cascade_fade'
+    ]
+}
 
 def create_split_lights(master_obj, collection):
     """
@@ -130,21 +177,14 @@ def create_split_lights(master_obj, collection):
         child_obj.lightgroup = lg_name
         
         # Setup Drivers
-        # Common properties to drive: color, energy, diffuse_factor, specular_factor, volume_factor?
-        # Usually just Color and Energy are the main ones users tweak.
-        # Radius/Size might also be important.
+        # Use the comprehensive LIGHT_PROPERTIES dict
+        light_type = master_obj.data.type
+        data_paths = LIGHT_PROPERTIES.get(light_type, [])
         
-        data_paths = ["color", "energy"]
-        if master_obj.data.type in ['POINT', 'SPOT', 'AREA']:
-             data_paths.append("shadow_soft_size") # Radius (Legacy)
-             data_paths.append("radius") # Radius (Modern)
-        if master_obj.data.type == 'SPOT':
-             data_paths.append("spot_size")
-             data_paths.append("spot_blend")
-        if master_obj.data.type == 'AREA':
-             data_paths.append("size")
-             data_paths.append("size_y")
-             data_paths.append("shape")
+        # Add legacy fallback for older Blender versions if needed, or just rely on hasattr check
+        if not data_paths:
+             # Fallback for unknown types or if dict is missing something
+             data_paths = ["color", "energy"]
              
         for path in data_paths:
             if not hasattr(child_obj.data, path):
