@@ -1,8 +1,8 @@
 bl_info = {
     "name": "Industrial Light AOV Splitter",
     "author": "Roland Vyens",
-    "version": (0, 6, 2),  # bump doc_url as well!
-    "blender": (3, 6, 0),
+    "version": (1, 0, 0),  # bump doc_url as well!
+    "blender": (4, 1, 0),
     "location": "Viewlayer tab in properties panel.",
     "description": "Auto create better light aovs (diffuse_key, specular_key...)",
     "category": "Render",
@@ -176,16 +176,16 @@ class LAS_PT_oPanel_Base:
         col.scale_y = 3
         col.operator(LAS_OT_InitAOVSimple.bl_idname, icon="LIGHT")
         col.operator(LAS_OT_InitAOV.bl_idname, icon="OUTLINER_OB_LIGHT")
-        # Toggle test mode / restore
-        _active = getattr(context.view_layer, "LAS_test_active", False)
-        if _active:
-            col.operator(LAS_OT_TestToggle.bl_idname, icon="HIDE_OFF", text="Restore Test")
-        else:
-            col.operator(LAS_OT_TestToggle.bl_idname, icon="HIDE_ON", text="Test Split Lights")
         col.operator(LAS_OT_CleanAOV.bl_idname, icon="TRASH")
         layout.prop(context.scene, "LAS_fixMissingLight")
         layout.label(text="Tools:")
         layout.operator(LAS_OT_AssignMissing.bl_idname, icon="APPEND_BLEND")
+                # Toggle test mode / restore
+        _active = getattr(context.view_layer, "LAS_test_active", False)
+        if _active:
+            layout.operator(LAS_OT_TestToggle.bl_idname, icon="HIDE_OFF", text="Restore Test")
+        else:
+            layout.operator(LAS_OT_TestToggle.bl_idname, icon="HIDE_ON", text="Test New Lights")
 
 
 
