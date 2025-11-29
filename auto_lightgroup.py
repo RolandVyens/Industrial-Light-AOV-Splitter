@@ -20,8 +20,11 @@ def setup_driver(source_obj, target_obj, data_path):
         print(f"Error adding driver for {data_path}: {e}")
         return
 
-    # Normalize to list
-    if not isinstance(fcurves, list):
+    # Check if it's an array (list returned) or scalar (single FCurve)
+    is_array = isinstance(fcurves, list)
+
+    # Normalize to list for iteration
+    if not is_array:
         fcurves = [fcurves]
         
     for fcurve in fcurves:
@@ -42,8 +45,9 @@ def setup_driver(source_obj, target_obj, data_path):
         target.id_type = 'OBJECT'
         target.id = source_obj
         
-        # Construct data path with index if applicable
-        if fcurve.array_index >= 0:
+        # Construct data path
+        # Only append index if it was originally returned as a list (meaning it's an array property)
+        if is_array and fcurve.array_index >= 0:
              target.data_path = f"data.{data_path}[{fcurve.array_index}]"
         else:
              target.data_path = f"data.{data_path}"
@@ -53,25 +57,29 @@ LIGHT_PROPERTIES = {
     'POINT': [
         'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
         'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start', 
-        'use_custom_distance', 'cutoff_distance', 'use_soft_falloff'
+        'use_custom_distance', 'cutoff_distance', 'use_soft_falloff',
+        'temperature', 'use_temperature', 'cycles.is_caustics_light'
     ],
     'SPOT': [
         'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
         'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start',
         'use_custom_distance', 'cutoff_distance', 'use_soft_falloff',
-        'spot_size', 'spot_blend', 'show_cone', 'use_square'
+        'spot_size', 'spot_blend', 'show_cone', 'use_square',
+        'temperature', 'use_temperature', 'cycles.is_caustics_light'
     ],
     'AREA': [
         'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
         'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start',
         'use_custom_distance', 'cutoff_distance',
-        'shape', 'size', 'size_y', 'spread'
+        'shape', 'size', 'size_y', 'spread',
+        'temperature', 'use_temperature', 'cycles.is_caustics_light', 'cycles.is_portal'
     ],
     'SUN': [
         'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
         'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start',
         'angle', 
-        'shadow_cascade_max_distance', 'shadow_cascade_count', 'shadow_cascade_exponent', 'shadow_cascade_fade'
+        'shadow_cascade_max_distance', 'shadow_cascade_count', 'shadow_cascade_exponent', 'shadow_cascade_fade',
+        'temperature', 'use_temperature', 'cycles.is_caustics_light'
     ]
 }
 
