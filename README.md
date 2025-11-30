@@ -5,7 +5,7 @@
 ### Materialized light group auto builder for blender
 ======================
 
-<img width="306" alt="屏幕截图 2025-03-24 002000" src="https://github.com/user-attachments/assets/ced546ac-6e82-4bd8-beea-53676840df0f" />
+<img width="253" height="233" alt="屏幕截图 2025-11-30 220557" src="https://github.com/user-attachments/assets/7900602f-d222-400d-87c9-00e2506aea4a" />
 
 **插件面板位置：属性面板→视图层**
 
@@ -17,9 +17,9 @@ recommended to use with [Industrial AOV Connector](https://github.com/RolandVyen
 
 ======================
 
-目前支持3.6 - 4.4 Supports blender 3.6 - 4.4 by now (2025.10.29)
+目前支持4.1 - 5.0 Supports blender 4.1 - 5.0 by now (2025.11.30)
 
-通过基本无感的方式，自动给符合条件的灯创建灯光组，把灯光分离成diffuse, specular, transmission, volume四个通道(如diffuse_env, specular_env...)，以取得与行业接轨的可控性（合成软件内）。也可一键给场景内的世界环境和发光物体打上灯光组。
+通过无感的方式，自动给符合条件的灯创建灯光组，把灯光分离成diffuse, specular, transmission, volume四个通道(如diffuse_env, specular_env...)，以取得与行业接轨的可控性（合成软件内）。也可一键给场景内的世界环境和发光物体打上灯光组。
 
 Separate the light groups into four channels: diffuse, specular, transmission, and volume (e.g., diffuse_env, specular_env...) with one click, to achieve industry-standard controllability during the compositing stage. Also can automatically give light groups to world and emissive objects.
 
@@ -32,6 +32,11 @@ join our [discord](https://discord.gg/wGzAAQSMce)
 ---
 **Update Log:**
 
+2025.11.30: version 1.0.0
+
+- reconstructed all code and logic for future proof and more robust performance
+- support blender 5.0
+
 2025.3.24: version 0.6.0
 
 - fix some bug
@@ -39,10 +44,6 @@ join our [discord](https://discord.gg/wGzAAQSMce)
 - added button for auto assign light group to emissive objects and world environment
 - added simple light group assign
 - update nuke script, now you can create light group aov tree from any node
-
-2025.1.31: version 0.5.0
-
-1. initial release, with basic functions.
 
 ---
 
@@ -54,7 +55,6 @@ join our [discord](https://discord.gg/wGzAAQSMce)
 3. **Put your lights in collections whose name starts with "lgt_".**
 4. **Naming your light properly with letters and numbers only. Do not use any "_"**
 5. **Press one of the function button to generate current viewlayer's light group. Note that only enabled collection will count. Now you can assign traditional light group as well.**
-6. **Only one light collection can be turned on for each viewlayer.**
 7. **If you want to reuse light group between multiple lights, just duplicate the lights and keep their auto-generated ".001" number suffix, they'll be ignored and revert back to the desired name.**
 6. **To test the generated light groups, you may need to use the test button in viewport shading mode, if nothing goes wrong, you won't see any change in lighting. Remember to restore the operation.**
 7. **If the scene size is too large, step 6 may cause light loss, you need to revert and check `Large Scale Mode` to fix.**
@@ -69,7 +69,6 @@ join our [discord](https://discord.gg/wGzAAQSMce)
 3. **将你的灯光放入名称以“lgt_”开头的集合中。**
 4. **正确命名你的灯光，仅使用字母和数字。不要使用任何下划线（“_”）。**
 5. **点击其中一个功能按钮为当前视图层生成灯光组。注意只有启用的集合才会被处理。现在你也可以一键生成传统灯光组。**
-6. **一个视图层只能有一个启用的灯光集合。**
 7. **如果你想在多个灯光之间重用灯光组，只需复制灯光并保留其自动生成的“.001”编号后缀。它们将被忽略并恢复为所需的名称。**
 6. **为了测试生成的灯光组，你需要在视窗渲染模式下点击测试按钮，如果没问题的话，灯光效果不会发生任何改变。记得撤回操作。**
 7. **如果场景尺寸过大，进行第6步可能会发生丢灯现象，需要撤回并勾选`Large Scale Mode` 修复。**
