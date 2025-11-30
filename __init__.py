@@ -1,8 +1,8 @@
 bl_info = {
     "name": "Industrial Light AOV Splitter",
     "author": "Roland Vyens",
-    "version": (0, 6, 2),  # bump doc_url as well!
-    "blender": (3, 6, 0),
+    "version": (1, 0, 0),  # bump doc_url as well!
+    "blender": (4, 1, 0),
     "location": "Viewlayer tab in properties panel.",
     "description": "Auto create better light aovs (diffuse_key, specular_key...)",
     "category": "Render",
@@ -18,8 +18,10 @@ from .auto_lightgroup import (
     auto_lightaov,
     auto_assign_world,
     assign_missing_object,
+    auto_clean_lightaov,
+    toggle_test_mode,
 )
-from .auto_aov_renderscript_v2 import auto_assignlight_scene, auto_restorelight_scene
+
 
 
 """配置"""
@@ -53,6 +55,19 @@ bpy.types.Scene.LAS_sceneMode = bpy.props.BoolProperty(  # 是否使用修复模
     description="When turned on, the light aov creation will be scene-wise instead of per-viewlayer, only works on blender 4.4 and higher",
     default=False,
 )
+
+
+
+
+class LAS_LightGroupItem(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(name="Light Group Name")  # type: ignore
+
+
+class LAS_TestItem(bpy.types.PropertyGroup):
+    """Store visibility backup for test mode restore."""
+    name: bpy.props.StringProperty(name="Object Name")  # type: ignore
+    hide_viewport: bpy.props.BoolProperty(default=False)  # type: ignore
+    hide_eye: bpy.props.BoolProperty(default=False)  # type: ignore
 
 
 """操作符"""
@@ -89,17 +104,7 @@ class LAS_OT_InitAOV(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class LAS_OT_CloudMode(bpy.types.Operator):
-    bl_idname = "object.cloudmodelas"
-    bl_label = "Test Light/Renderfarm Prepare"
-    bl_description = "Precreate all lights to see if the newly-created light matches the original ones, best to perform in viewport shading mode. Or send to cloud render farm without installing the plugin"
-    bl_options = {"REGISTER", "UNDO"}
 
-    def execute(self, context):
-        auto_assignlight_scene(bpy.context.scene)
-        self.report({"INFO"}, bpy.app.translations.pgettext("Pre-created All Lights"))
-
-        return {"FINISHED"}
 
 
 class LAS_OT_AssignMissing(bpy.types.Operator):
@@ -121,6 +126,42 @@ class LAS_OT_AssignMissing(bpy.types.Operator):
         infof = infox + info1 + info2
         self.report({"INFO"}, infof)
 
+        self.report({"INFO"}, infof)
+
+        return {"FINISHED"}
+
+
+class LAS_OT_CleanAOV(bpy.types.Operator):
+    bl_idname = "object.cleanlightaov"
+    bl_label = "Restore / Clean AOVs"
+    bl_description = 'Removes all split lights and restores master lights to renderable state.'
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        auto_clean_lightaov()
+        self.report(
+            {"INFO"}, bpy.app.translations.pgettext("Restored Original Lights")
+        )
+
+        return {"FINISHED"}
+
+
+class LAS_OT_TestToggle(bpy.types.Operator):
+    bl_idname = "object.testtoggle"
+    bl_label = "Test Split Lights"
+    bl_description = 'Toggle "test" mode: hide master lights and show split children, then restore'
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        ok = toggle_test_mode()
+        if not ok:
+            self.report({"WARNING"}, "Test toggle unavailable: ensure addon is enabled or reload the addon (registration missing).")
+        else:
+            # convey simple status
+            if context.view_layer.LAS_test_active:
+                self.report({"INFO"}, "Entered Test Mode")
+            else:
+                self.report({"INFO"}, "Restored from Test Mode")
         return {"FINISHED"}
 
 
@@ -135,10 +176,17 @@ class LAS_PT_oPanel_Base:
         col.scale_y = 3
         col.operator(LAS_OT_InitAOVSimple.bl_idname, icon="LIGHT")
         col.operator(LAS_OT_InitAOV.bl_idname, icon="OUTLINER_OB_LIGHT")
+        col.operator(LAS_OT_CleanAOV.bl_idname, icon="TRASH")
         layout.prop(context.scene, "LAS_fixMissingLight")
         layout.label(text="Tools:")
         layout.operator(LAS_OT_AssignMissing.bl_idname, icon="APPEND_BLEND")
-        layout.operator(LAS_OT_CloudMode.bl_idname, icon="SCREEN_BACK")
+                # Toggle test mode / restore
+        _active = getattr(context.view_layer, "LAS_test_active", False)
+        if _active:
+            layout.operator(LAS_OT_TestToggle.bl_idname, icon="HIDE_OFF", text="Restore Test")
+        else:
+            layout.operator(LAS_OT_TestToggle.bl_idname, icon="HIDE_ON", text="Test New Lights")
+
 
 
 class LAS_PT_oPanel(bpy.types.Panel, LAS_PT_oPanel_Base):
@@ -187,32 +235,48 @@ class LAS_PT_oPanel_N(bpy.types.Panel, LAS_PT_oPanel_Base):
 """以下为注册函数"""
 reg_clss = [
     LAS_AddonPrefs,
+    LAS_LightGroupItem,
+    LAS_TestItem,
     LAS_OT_InitAOVSimple,
     LAS_OT_InitAOV,
+    LAS_OT_CleanAOV,
     LAS_OT_AssignMissing,
+    LAS_OT_TestToggle,
     LAS_PT_oPanel,
     LAS_PT_oPanel_COMP,
     LAS_PT_oPanel_N,
-    LAS_OT_CloudMode,
+
 ]
 
 
 def register():
     for i in reg_clss:
         bpy.utils.register_class(i)
+    
+    bpy.types.ViewLayer.las_created_lightgroups = bpy.props.CollectionProperty(type=LAS_LightGroupItem)
+    # Test backup list and active flag for the Test AOV feature
+    bpy.types.ViewLayer.las_test_backup = bpy.props.CollectionProperty(type=LAS_TestItem)
+    bpy.types.ViewLayer.LAS_test_active = bpy.props.BoolProperty(default=False)
     # bpy.app.translations.register(__package__, language_dict)
-    bpy.app.handlers.render_init.append(auto_assignlight_scene)
-    bpy.app.handlers.render_cancel.append(auto_restorelight_scene)
-    bpy.app.handlers.render_complete.append(auto_restorelight_scene)
+
 
 
 def unregister():
     for i in reg_clss:
         bpy.utils.unregister_class(i)
+        
+    del bpy.types.ViewLayer.las_created_lightgroups
+    # remove our added test properties
+    try:
+        del bpy.types.ViewLayer.las_test_backup
+    except Exception:
+        pass
+    try:
+        del bpy.types.ViewLayer.LAS_test_active
+    except Exception:
+        pass
     # bpy.app.translations.unregister(__package__)
-    bpy.app.handlers.render_init.remove(auto_assignlight_scene)
-    bpy.app.handlers.render_cancel.remove(auto_restorelight_scene)
-    bpy.app.handlers.render_complete.remove(auto_restorelight_scene)
+
 
 
 if __name__ == "__main__":
