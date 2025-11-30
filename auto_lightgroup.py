@@ -58,28 +58,28 @@ LIGHT_PROPERTIES = {
         'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
         'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start', 
         'use_custom_distance', 'cutoff_distance', 'use_soft_falloff',
-        'temperature', 'use_temperature', 'cycles.is_caustics_light'
+        'temperature', 'use_temperature', 'cycles.is_caustics_light', 'exposure'
     ],
     'SPOT': [
         'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
         'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start',
         'use_custom_distance', 'cutoff_distance', 'use_soft_falloff',
         'spot_size', 'spot_blend', 'show_cone', 'use_square',
-        'temperature', 'use_temperature', 'cycles.is_caustics_light'
+        'temperature', 'use_temperature', 'cycles.is_caustics_light', 'exposure'
     ],
     'AREA': [
         'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
         'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start',
         'use_custom_distance', 'cutoff_distance',
         'shape', 'size', 'size_y', 'spread',
-        'temperature', 'use_temperature', 'cycles.is_caustics_light', 'cycles.is_portal'
+        'temperature', 'use_temperature', 'cycles.is_caustics_light', 'cycles.is_portal', 'exposure'
     ],
     'SUN': [
         'color', 'energy', 'specular_factor', 'diffuse_factor', 'transmission_factor', 'volume_factor',
         'use_shadow', 'shadow_soft_size', 'shadow_buffer_clip_start',
         'angle', 
         'shadow_cascade_max_distance', 'shadow_cascade_count', 'shadow_cascade_exponent', 'shadow_cascade_fade',
-        'temperature', 'use_temperature', 'cycles.is_caustics_light'
+        'temperature', 'use_temperature', 'cycles.is_caustics_light', 'exposure'
     ]
 }
 
@@ -195,8 +195,23 @@ def create_split_lights(master_obj, collection):
              data_paths = ["color", "energy"]
              
         for path in data_paths:
-            if not hasattr(child_obj.data, path):
+            # Check if property exists (handling nested paths like cycles.is_portal)
+            prop_exists = True
+            if "." in path:
+                parts = path.split(".")
+                curr = child_obj.data
+                try:
+                    for part in parts:
+                        curr = getattr(curr, part)
+                except AttributeError:
+                    prop_exists = False
+            else:
+                if not hasattr(child_obj.data, path):
+                    prop_exists = False
+            
+            if not prop_exists:
                 continue
+
             try:
                 setup_driver(master_obj, child_obj.data, path)
             except Exception as e:
