@@ -85,10 +85,27 @@ LIGHT_PROPERTIES = {
 
 def create_split_lights(master_obj, collection):
     """
-    Creates 4 split lights (Diffuse, Specular, Transmission, Volume) for the given master light.
+    Creates split lights for enabled channels on the master light.
+    Only creates child lights for channels that are visible on the master.
     Parents them to master, sets up drivers, and assigns light groups.
     """
-    lobes = ["diffuse", "specular", "transmission", "volume"]
+    # Map lobe names to master light visibility properties
+    lobe_visibility_map = {
+        "diffuse": "visible_diffuse",
+        "specular": "visible_glossy",
+        "transmission": "visible_transmission",
+        "volume": "visible_volume_scatter",
+    }
+    
+    # Filter lobes based on master light's channel visibility
+    lobes = []
+    for lobe, vis_prop in lobe_visibility_map.items():
+        if getattr(master_obj, vis_prop, False):
+            lobes.append(lobe)
+    
+    # If no channels are enabled, skip this light entirely
+    if not lobes:
+        return
     
     # Ensure master light is hidden from render (so it doesn't double contribute)
     # But we want to keep it visible in viewport for editing.
