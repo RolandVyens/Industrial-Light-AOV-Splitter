@@ -227,14 +227,44 @@ process(bpy.context.view_layer.layer_collection)
 
 ## Packaging for Distribution
 
-- Use `python build_release.py`
-- Output path: `dist/Industrial-Light-AOV-Splitter <version>.zip`
-- The zip intentionally matches the historical extension structure:
-  - `Industrial-Light-AOV-Splitter/`
-  - `Industrial-Light-AOV-Splitter/__init__.py`
-  - `Industrial-Light-AOV-Splitter/auto_lightgroup.py`
-  - `Industrial-Light-AOV-Splitter/blender_manifest.toml`
-- Use Python `zipfile`, not PowerShell `Compress-Archive`, so Blender sees forward-slash paths and the root directory entry correctly.
+### Release Workflow
+
+1. Update version numbers in both:
+   - `__init__.py` -> `bl_info["version"]`
+   - `blender_manifest.toml` -> `version`
+2. Update user-facing release notes when needed:
+   - `README.md` update log and support range
+3. Run automated validation in the Blender 5.2 test build:
+   - `& 'C:\Program Files\Blender Foundation\blender-vfx-5.2-2026-04-22\blender.exe' --background --factory-startup --python-exit-code 1 --python tests/run_blender_tests.py`
+4. Build the release zip:
+   - `python build_release.py`
+5. Confirm the output exists:
+   - `dist/Industrial-Light-AOV-Splitter <version>.zip`
+6. If the release is accepted, commit the source changes. The built zip is an output artifact and does not need to be committed unless explicitly requested.
+
+### Packaging Rules
+
+- Use `build_release.py` for packaging.
+- Use Python `zipfile`, not PowerShell `Compress-Archive`.
+- Blender extension installs are sensitive to archive paths; the zip must use forward slashes and include the root directory entry.
+- The current package intentionally follows the historical structure from `Industrial-Light-AOV-Splitter 1.0.1.zip`.
+
+### Expected Zip Structure
+
+- `Industrial-Light-AOV-Splitter/`
+- `Industrial-Light-AOV-Splitter/__init__.py`
+- `Industrial-Light-AOV-Splitter/auto_lightgroup.py`
+- `Industrial-Light-AOV-Splitter/blender_manifest.toml`
+
+### Packaging Script Notes
+
+- Script path: `build_release.py`
+- Output naming pattern: `dist/Industrial-Light-AOV-Splitter <version>.zip`
+- Current include list is intentionally minimal and runtime-only:
+  - `__init__.py`
+  - `auto_lightgroup.py`
+  - `blender_manifest.toml`
+- Do not add dev-only content such as `tests/`, `__pycache__/`, `.git/`, or `AGENT.md` to the release archive unless the packaging target changes.
 
 ---
 
