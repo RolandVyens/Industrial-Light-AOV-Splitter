@@ -4,6 +4,28 @@ from mathutils import Vector, Matrix
 
 # Global dictionary removed - using bpy.context.view_layer.las_created_lightgroups instead
 
+
+def _principled_has_emission(node):
+    """
+    Return True when a Principled BSDF node has emission enabled.
+
+    Blender socket ordering can shift between versions, so prefer named inputs
+    and only fall back to the legacy index when needed.
+    """
+    emission_strength = node.inputs.get("Emission Strength")
+    if emission_strength is not None:
+        return emission_strength.default_value > 0
+
+    emission_color = node.inputs.get("Emission Color")
+    if emission_color is not None:
+        rgba = emission_color.default_value
+        return any(channel > 0 for channel in rgba[:3])
+
+    try:
+        return node.inputs[26].default_value > 0
+    except (IndexError, AttributeError, TypeError):
+        return False
+
 def setup_driver(source_obj, target_obj, data_path):
     """
     Sets up a driver on target_obj.data_path to copy source_obj.data_path.
@@ -365,13 +387,9 @@ def assign_missing_object():
                         if node.type == "EMISSION":
                             objects_with_emissive_material.append(obj.name)
                             break
-                        elif node.type == "BSDF_PRINCIPLED" and node.inputs[26].default_value > 0: # Emission strength
-                             # Note: Index 26 might vary by Blender version. 
-                             # 4.0+ Principled BSDF changed. Emission Strength is often named "Emission Strength".
-                             # Let's try to find by name or check standard indices.
-                             # For safety, let's just check if it has emission.
-                             objects_with_emissive_material.append(obj.name)
-                             break
+                        elif node.type == "BSDF_PRINCIPLED" and _principled_has_emission(node):
+                            objects_with_emissive_material.append(obj.name)
+                            break
                              
     if "emissive_default" not in bpy.context.view_layer.lightgroups:
         lg = bpy.context.view_layer.lightgroups.add()

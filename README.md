@@ -17,7 +17,7 @@ recommended to use with [Industrial AOV Connector](https://github.com/RolandVyen
 
 ======================
 
-目前支持4.1 - 5.0 Supports blender 4.1 - 5.0 by now (2025.11.30)
+目前支持4.1 - 5.2 Supports blender 4.1 - 5.2 by now (2026.05.18)
 
 通过无感的方式，自动给符合条件的灯创建灯光组，把灯光分离成diffuse, specular, transmission, volume四个通道(如diffuse_env, specular_env...)，以取得与行业接轨的可控性（合成软件内）。也可一键给场景内的世界环境和发光物体打上灯光组。
 
@@ -31,6 +31,11 @@ join our [discord](https://discord.gg/wGzAAQSMce)
 
 ---
 **Update Log:**
+
+2026.05.18: version 1.0.2
+
+- support blender 5.2
+- improve Principled BSDF emissive object detection for cross-version compatibility
 
 2025.11.30: version 1.0.0
 

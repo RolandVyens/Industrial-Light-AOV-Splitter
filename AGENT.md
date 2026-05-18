@@ -20,6 +20,7 @@ Industrial-Light-AOV-Splitter/
 ├── __init__.py              # Addon entry point, operators, UI panels / 插件入口、操作符、面板
 ├── auto_lightgroup.py       # Core light splitting logic / 核心灯光分离逻辑
 ├── blender_manifest.toml    # Blender 4.2+ extension manifest
+├── build_release.py         # Release zip builder for Blender extension packaging
 ├── README.md                # User documentation (bilingual)
 ├── LICENSE                  # GPL-3.0 license
 ├── lightaov_demo.blend      # Demo/test file
@@ -157,11 +158,8 @@ process(bpy.context.view_layer.layer_collection)
 
 ## Known Issues & Technical Debt / 已知问题
 
-1. **Hardcoded node input index** (line 351 in `auto_lightgroup.py`):
-   ```python
-   node.inputs[26].default_value > 0  # Emission strength
-   ```
-   Should use `node.inputs.get("Emission Strength")` for version compatibility.
+1. **Principled BSDF emission lookup**:
+   Prefer named socket lookup for emission inputs because socket indices can shift between Blender releases.
 
 2. **Duplicated helper pattern** - Lightgroup tracking logic is repeated 5+ times:
    ```python
@@ -191,6 +189,7 @@ process(bpy.context.view_layer.layer_collection)
 | 4.1 - 4.3 | ✅ Fully supported |
 | 4.4+ | ✅ Supported + Whole Scene Mode |
 | 5.0 | ✅ Supported |
+| 5.2 | ✅ Supported |
 
 **Cycles-specific properties**: `cycles.is_caustics_light`, `cycles.is_portal` are only available when Cycles is the active render engine.
 
@@ -226,13 +225,26 @@ process(bpy.context.view_layer.layer_collection)
 
 ---
 
+## Packaging for Distribution
+
+- Use `python build_release.py`
+- Output path: `dist/Industrial-Light-AOV-Splitter <version>.zip`
+- The zip intentionally matches the historical extension structure:
+  - `Industrial-Light-AOV-Splitter/`
+  - `Industrial-Light-AOV-Splitter/__init__.py`
+  - `Industrial-Light-AOV-Splitter/auto_lightgroup.py`
+  - `Industrial-Light-AOV-Splitter/blender_manifest.toml`
+- Use Python `zipfile`, not PowerShell `Compress-Archive`, so Blender sees forward-slash paths and the root directory entry correctly.
+
+---
+
 ## File Modification Checklist / 文件修改检查清单
 
 When modifying this addon:
 
 - [ ] Ensure `bl_info["version"]` is updated for releases
 - [ ] Update `blender_manifest.toml` version for extension releases
-- [ ] Test with multiple Blender versions (4.1, 4.4, 5.0)
+- [ ] Test with multiple Blender versions (4.1, 4.4, 5.0, 5.2)
 - [ ] Verify all operators have `bl_options = {"REGISTER", "UNDO"}`
 - [ ] Check error handling for missing properties (version differences)
 - [ ] Update README.md if user-facing behavior changes

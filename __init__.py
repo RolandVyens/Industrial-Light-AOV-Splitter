@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Industrial Light AOV Splitter",
     "author": "Roland Vyens",
-    "version": (1, 0, 1),  # bump doc_url as well!
+    "version": (1, 0, 2),  # bump doc_url as well!
     "blender": (4, 1, 0),
     "location": "Viewlayer tab in properties panel.",
     "description": "Auto create better light aovs (diffuse_key, specular_key...)",
@@ -52,7 +52,7 @@ bpy.types.Scene.LAS_fixMissingLight = bpy.props.BoolProperty(  # 是否使用修
 
 bpy.types.Scene.LAS_sceneMode = bpy.props.BoolProperty(  # 是否使用修复模式
     name="Whole Scene Mode",
-    description="When turned on, the light aov creation will be scene-wise instead of per-viewlayer, only works on blender 4.4 and higher",
+    description="When turned on, the light aov creation will be scene-wise instead of per-viewlayer, only works on Blender 4.4 and higher",
     default=False,
 )
 
@@ -119,9 +119,9 @@ class LAS_OT_AssignMissing(bpy.types.Operator):
         infox = "Assigned light groups to "
         info1 = ""
         info2 = ""
-        if world_stat is not 0:
+        if world_stat != 0:
             info1 = f"{world_stat} world, "
-        if emissive_stat is not 0:
+        if emissive_stat != 0:
             info2 = f"{emissive_stat} object"
         infof = infox + info1 + info2
         self.report({"INFO"}, infof)
